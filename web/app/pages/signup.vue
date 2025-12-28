@@ -38,6 +38,7 @@
 <script setup lang="ts">
 const config = useRuntimeConfig()
 const apiUrl = config.public.apiUrl
+const { refreshAuth } = useAuth()
 
 const email = ref('')
 const password = ref('')
@@ -65,6 +66,12 @@ const handleSubmit = async () => {
         localStorage.setItem('token', response.token)
       }
     }
+
+    // Refresh auth state to update the flag
+    await refreshAuth()
+    
+    // Redirect to homepage after successful signup
+    await navigateTo('/')
   } catch (error: any) {
     messageType.value = 'error'
     message.value = 'Error: ' + (error.data?.error || error.message || 'Something went wrong')
