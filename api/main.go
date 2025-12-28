@@ -56,10 +56,6 @@ func main() {
 		c.JSON(200, gin.H{"status": "ok"})
 	})
 
-	// Public routes - HTML forms
-	router.GET("/signup", handlers.HandleSignupForm)
-	router.GET("/signin", handlers.HandleSigninForm)
-	
 	// Public routes - API endpoints
 	router.POST("/signup", handlers.HandleSignup)
 	router.POST("/signin", handlers.HandleSignin)
