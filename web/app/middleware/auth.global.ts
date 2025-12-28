@@ -14,5 +14,10 @@ export default defineNuxtRouteMiddleware(async (to) => {
   if (to.path === '/dashboard' && !authenticated) {
     return navigateTo('/signin')
   }
+
+  // If trying to access list pages without authentication, redirect to signin
+  if (to.path.startsWith('/lists/') && !authenticated) {
+    return navigateTo('/signin')
+  }
 })
 

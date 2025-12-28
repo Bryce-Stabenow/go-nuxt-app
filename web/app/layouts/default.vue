@@ -22,9 +22,6 @@
               <NuxtLink to="/signin" class="text-gray-700 hover:text-purple-600 hover:underline transition-colors">
                 Sign In
               </NuxtLink>
-              <NuxtLink to="/signup" class="text-gray-700 hover:text-purple-600 hover:underline transition-colors">
-                Sign Up
-              </NuxtLink>
             </template>
           </div>
         </div>

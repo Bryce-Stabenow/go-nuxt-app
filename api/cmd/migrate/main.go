@@ -91,7 +91,7 @@ func createUserCollection(db *mongo.Database) error {
 
 	fmt.Println("✓ User collection created with indexes (email, username, created_at)")
 
-	// Create a sample document structure comment (optional - for documentation)
+	// Create a sample document structure comment
 	// User document structure:
 	// {
 	//   "_id": ObjectId,
