@@ -51,6 +51,9 @@ func main() {
 	// Initialize Gin router
 	router := gin.Default()
 
+	// Apply CORS middleware to all routes
+	router.Use(middleware.CORS())
+
 	// Health check endpoint
 	router.GET("/health", func(c *gin.Context) {
 		c.JSON(200, gin.H{"status": "ok"})

@@ -36,6 +36,9 @@
 </template>
 
 <script setup lang="ts">
+const config = useRuntimeConfig()
+const apiUrl = config.public.apiUrl
+
 const email = ref('')
 const password = ref('')
 const message = ref('')
@@ -45,19 +48,22 @@ const handleSubmit = async () => {
   message.value = ''
   
   try {
-    const response = await $fetch('/signup', {
+    const response = await $fetch<{ token?: string }>(`${apiUrl}/signup`, {
       method: 'POST',
       body: {
         email: email.value,
         password: password.value
-      }
+      },
+      credentials: 'include'
     })
     
     messageType.value = 'success'
     message.value = 'Account created successfully! Cookie set. <br><button onclick="testMe()" style="margin-top: 10px; padding: 8px 16px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer;">Test /me endpoint</button>'
     
     if (response.token) {
-      localStorage.setItem('token', response.token)
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('token', response.token)
+      }
     }
   } catch (error: any) {
     messageType.value = 'error'
@@ -67,7 +73,7 @@ const handleSubmit = async () => {
 
 const testMe = async () => {
   try {
-    const response = await $fetch('/me', {
+    const response = await $fetch(`${apiUrl}/me`, {
       method: 'GET',
       credentials: 'include'
     })
@@ -81,7 +87,7 @@ const testMe = async () => {
 }
 
 // Expose testMe to window for onclick handler
-if (process.client) {
+if (typeof window !== 'undefined') {
   ;(window as any).testMe = testMe
 }
 </script>
