@@ -1,14 +1,14 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-purple-500 to-purple-700 px-4 py-20">
+  <div class="min-h-screen bg-gradient-to-br from-purple-500 to-purple-700 px-4 py-10">
     <div class="max-w-4xl mx-auto">
-      <div class="bg-white rounded-xl shadow-2xl p-10 mb-6">
-        <h1 class="text-3xl font-bold text-gray-900 mb-8 text-center">Dashboard</h1>
+      <div class="bg-white rounded-xl shadow-2xl py-2 mb-6">
+        <h1 class="text-3xl font-bold text-gray-900 mb-2 text-center">Dashboard</h1>
         <div v-if="isLoading" class="text-center text-gray-600 text-base py-5">
           Loading...
         </div>
-        <div v-else-if="isAuthenticated && user" class="mt-5">
-          <p class="text-gray-900 text-lg leading-relaxed text-center mb-6">
-            Welcome, <strong class="text-purple-600 font-semibold">{{ user.email }}</strong>
+        <div v-else-if="isAuthenticated && user">
+          <p class="text-gray-900 text-lg leading-relaxed text-center">
+            Welcome, <strong class="text-purple-600 font-semibold">{{ user.profile.first_name }}</strong>
           </p>
         </div>
         <div v-else class="text-center text-red-800 py-5">

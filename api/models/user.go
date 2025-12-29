@@ -26,8 +26,11 @@ type Profile struct {
 
 // SignupRequest represents the request body for signup
 type SignupRequest struct {
-	Email    string `json:"email" binding:"required,email"`
-	Password string `json:"password" binding:"required,min=6"`
+	Email     string  `json:"email" binding:"required,email"`
+	Password  string  `json:"password" binding:"required,min=6"`
+	FirstName string  `json:"first_name" binding:"required"`
+	LastName  string  `json:"last_name" binding:"required"`
+	AvatarURL *string `json:"avatar_url,omitempty"`
 }
 
 // SigninRequest represents the request body for signin
@@ -47,6 +50,7 @@ type UserPublic struct {
 	ID        string    `json:"id"`
 	Email     string    `json:"email"`
 	Username  string    `json:"username,omitempty"`
+	Profile   *Profile  `json:"profile,omitempty"`
 	CreatedAt time.Time `json:"created_at"`
 }
 

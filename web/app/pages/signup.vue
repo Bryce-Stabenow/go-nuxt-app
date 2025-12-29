@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-500 to-purple-700 px-4 py-20">
+  <div class="min-h-screen flex items-start justify-center bg-gradient-to-br from-purple-500 to-purple-700 px-4 py-10">
     <div class="bg-white rounded-xl shadow-2xl p-10 w-full max-w-md">
       <h1 class="text-3xl font-bold text-gray-900 mb-2">Sign Up</h1>
       <p class="text-gray-600 text-sm mb-8">Create a new account to get started</p>
@@ -22,6 +22,35 @@
             v-model="password"
             required
             minlength="6"
+            class="w-full px-3 py-3 border-2 border-gray-200 rounded-lg text-base transition-colors focus:outline-none focus:border-purple-500"
+          />
+        </div>
+        <div class="mb-5">
+          <label for="firstName" class="block text-gray-900 mb-2 font-medium text-sm">First Name</label>
+          <input
+            type="text"
+            id="firstName"
+            v-model="firstName"
+            required
+            class="w-full px-3 py-3 border-2 border-gray-200 rounded-lg text-base transition-colors focus:outline-none focus:border-purple-500"
+          />
+        </div>
+        <div class="mb-5">
+          <label for="lastName" class="block text-gray-900 mb-2 font-medium text-sm">Last Name</label>
+          <input
+            type="text"
+            id="lastName"
+            v-model="lastName"
+            required
+            class="w-full px-3 py-3 border-2 border-gray-200 rounded-lg text-base transition-colors focus:outline-none focus:border-purple-500"
+          />
+        </div>
+        <div class="mb-5">
+          <label for="avatarUrl" class="block text-gray-900 mb-2 font-medium text-sm">Avatar URL <span class="text-gray-500 font-normal">(optional)</span></label>
+          <input
+            type="url"
+            id="avatarUrl"
+            v-model="avatarUrl"
             class="w-full px-3 py-3 border-2 border-gray-200 rounded-lg text-base transition-colors focus:outline-none focus:border-purple-500"
           />
         </div>
@@ -52,6 +81,9 @@ const { refreshAuth } = useAuth()
 
 const email = ref('')
 const password = ref('')
+const firstName = ref('')
+const lastName = ref('')
+const avatarUrl = ref('')
 const message = ref('')
 const messageType = ref<'success' | 'error'>('success')
 
@@ -59,12 +91,26 @@ const handleSubmit = async () => {
   message.value = ''
   
   try {
+    const body: {
+      email: string
+      password: string
+      first_name: string
+      last_name: string
+      avatar_url?: string
+    } = {
+      email: email.value,
+      password: password.value,
+      first_name: firstName.value,
+      last_name: lastName.value
+    }
+    
+    if (avatarUrl.value.trim()) {
+      body.avatar_url = avatarUrl.value.trim()
+    }
+    
     const response = await $fetch<{ token?: string }>(`${apiUrl}/signup`, {
       method: 'POST',
-      body: {
-        email: email.value,
-        password: password.value
-      },
+      body,
       credentials: 'include'
     })
     

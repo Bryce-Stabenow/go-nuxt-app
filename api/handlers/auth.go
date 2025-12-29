@@ -48,12 +48,21 @@ func HandleSignup(c *gin.Context) {
 		return
 	}
 
-	// Create user
+	// Create user with profile
 	now := time.Now()
+	profile := &models.Profile{
+		FirstName: req.FirstName,
+		LastName:  req.LastName,
+	}
+	if req.AvatarURL != nil && *req.AvatarURL != "" {
+		profile.AvatarURL = *req.AvatarURL
+	}
+	
 	user := models.User{
 		ID:           primitive.NewObjectID(),
 		Email:        req.Email,
 		PasswordHash: string(hashedPassword),
+		Profile:      profile,
 		CreatedAt:    now,
 		UpdatedAt:    now,
 	}
@@ -81,6 +90,7 @@ func HandleSignup(c *gin.Context) {
 			ID:        user.ID.Hex(),
 			Email:     user.Email,
 			Username:  user.Username,
+			Profile:   user.Profile,
 			CreatedAt: user.CreatedAt,
 		},
 	})
@@ -134,6 +144,7 @@ func HandleSignin(c *gin.Context) {
 			ID:        user.ID.Hex(),
 			Email:     user.Email,
 			Username:  user.Username,
+			Profile:   user.Profile,
 			CreatedAt: user.CreatedAt,
 		},
 	})
