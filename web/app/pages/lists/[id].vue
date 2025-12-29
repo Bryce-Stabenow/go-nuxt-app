@@ -82,12 +82,6 @@
               <h2 class="text-xl font-semibold text-gray-900">
                 Items ({{ list.items.length }})
               </h2>
-              <button
-                @click="openAddItemModal"
-                class="px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-700 text-white rounded-lg font-medium hover:shadow-lg transition-all"
-              >
-                + Add
-              </button>
             </div>
             <div
               aria-label="Add Item"
@@ -104,31 +98,41 @@
             </div>
             <div v-else class="space-y-3">
               <div
-                v-for="(item, index) in list.items"
-                :key="index"
+                v-for="(sortedItem, displayIndex) in sortedItems"
+                :key="sortedItem.originalIndex"
                 class="flex items-center gap-4 p-4 border-2 border-gray-200 rounded-lg hover:border-purple-300 transition-colors"
-                :class="{ 'bg-gray-50': item.checked }"
+                :class="{ 'bg-gray-50': sortedItem.item.checked }"
               >
-                <input
-                  type="checkbox"
-                  :checked="item.checked"
-                  @change="handleItemCheckedChange(Number(index), $event)"
-                  class="w-5 h-5 text-purple-600 border-gray-300 rounded focus:ring-purple-500 cursor-pointer"
-                />
                 <div class="flex-1">
                   <div class="flex items-center gap-2">
                     <span
                       class="font-medium text-gray-900"
-                      :class="{ 'line-through text-gray-500': item.checked }"
+                      :class="{ 'line-through text-gray-500': sortedItem.item.checked }"
                     >
-                      {{ item.name }}
+                      {{ sortedItem.item.name }}
                     </span>
                   </div>
                   <div class="text-sm text-gray-500 mt-1">
-                    <span v-if="item.quantity > 0">Quantity: {{ item.quantity }}</span>
+                    <span v-if="sortedItem.item.quantity > 0"
+                      >Quantity: {{ sortedItem.item.quantity }}</span
+                    >
                   </div>
                 </div>
+                <input
+                  type="checkbox"
+                  :checked="sortedItem.item.checked"
+                  @change="handleItemCheckedChange(sortedItem.originalIndex, $event)"
+                  class="w-5 h-5 text-purple-600 border-gray-300 rounded focus:ring-purple-500 cursor-pointer"
+                />
               </div>
+            </div>
+            <div class="flex justify-center pt-6">
+              <button
+                @click="openAddItemModal"
+                class="px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-700 text-white rounded-lg font-medium hover:shadow-lg transition-all"
+              >
+                + Add
+              </button>
             </div>
           </div>
 
@@ -150,16 +154,15 @@
               </span>
             </div>
           </div>
-
-          <div class="flex justify-center mt-10">
-            <NuxtLink
-              to="/dashboard"
-              class="px-4 py-2 text-purple-600 border-2 border-purple-600 rounded-lg font-medium no-underline hover:bg-purple-50 transition-colors ml-4"
-            >
-              Back to Dashboard
-            </NuxtLink>
-          </div>
         </div>
+      </div>
+      <div class="flex justify-center mt-10">
+        <NuxtLink
+          to="/dashboard"
+          class="px-4 py-2 text-white border-2 border-white rounded-lg font-medium no-underline hover:bg-white hover:text-purple-500 transition-colors ml-4"
+        >
+          Back to Dashboard
+        </NuxtLink>
       </div>
     </div>
 
@@ -173,6 +176,8 @@
 </template>
 
 <script setup lang="ts">
+import confetti from "canvas-confetti";
+
 const route = useRoute();
 const { getList, updateList, updateListItemChecked } = useLists();
 
@@ -184,6 +189,79 @@ const editingName = ref("");
 const nameInput = ref<HTMLInputElement | null>(null);
 const isSaving = ref(false);
 const isAddItemModalOpen = ref(false);
+const wasAllChecked = ref(false);
+
+// Computed property to sort items: unchecked items first, checked items at the bottom
+const sortedItems = computed(() => {
+  if (!list.value || !list.value.items) {
+    return [];
+  }
+  
+  return list.value.items
+    .map((item: any, originalIndex: number) => ({
+      item,
+      originalIndex,
+    }))
+    .sort((a: any, b: any) => {
+      // Unchecked items (false) come before checked items (true)
+      if (a.item.checked === b.item.checked) {
+        // If both have the same checked state, maintain original order
+        return a.originalIndex - b.originalIndex;
+      }
+      return a.item.checked ? 1 : -1;
+    });
+});
+
+// Confetti functions (defined early so they can be used in loadList)
+const checkAllItemsChecked = (): boolean => {
+  if (!list.value || !list.value.items || list.value.items.length === 0) {
+    return false;
+  }
+  return list.value.items.every((item: any) => item.checked);
+};
+
+const triggerConfetti = () => {
+  const duration = 3000;
+  const animationEnd = Date.now() + duration;
+  const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+
+  function randomInRange(min: number, max: number) {
+    return Math.random() * (max - min) + min;
+  }
+
+  const interval: any = setInterval(function () {
+    const timeLeft = animationEnd - Date.now();
+
+    if (timeLeft <= 0) {
+      return clearInterval(interval);
+    }
+
+    const particleCount = 50 * (timeLeft / duration);
+    confetti({
+      ...defaults,
+      particleCount,
+      origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 },
+    });
+    confetti({
+      ...defaults,
+      particleCount,
+      origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 },
+    });
+  }, 250);
+};
+
+const checkAndTriggerConfetti = () => {
+  if (!list.value) return;
+
+  const allChecked = checkAllItemsChecked();
+
+  // Only trigger confetti when transitioning from "not all checked" to "all checked"
+  if (allChecked && !wasAllChecked.value) {
+    triggerConfetti();
+  }
+
+  wasAllChecked.value = allChecked;
+};
 
 onMounted(async () => {
   await loadList();
@@ -196,6 +274,8 @@ const loadList = async () => {
   try {
     const listId = route.params.id as string;
     list.value = await getList(listId);
+    // Initialize the wasAllChecked state
+    wasAllChecked.value = checkAllItemsChecked();
   } catch (err: any) {
     if (err.statusCode === 404) {
       error.value = "List not found";
@@ -264,6 +344,7 @@ const closeAddItemModal = () => {
 
 const handleItemAdded = (updatedList: any) => {
   list.value = updatedList;
+  checkAndTriggerConfetti();
 };
 
 // Debounce timer for checkbox updates
@@ -279,6 +360,9 @@ const handleItemCheckedChange = async (index: number, event: Event) => {
   if (list.value.items[index]) {
     list.value.items[index].checked = newChecked;
   }
+
+  // Check for confetti after optimistic update
+  checkAndTriggerConfetti();
 
   // Clear existing debounce timer for this item
   const existingTimer = debounceTimers.get(index);
@@ -297,12 +381,16 @@ const handleItemCheckedChange = async (index: number, event: Event) => {
       );
       // Update with server response to ensure sync
       list.value = updatedList;
+      // Check for confetti after server response
+      checkAndTriggerConfetti();
     } catch (err: any) {
       // Revert on error
       if (list.value.items[index]) {
         list.value.items[index].checked = !newChecked;
       }
       console.error("Failed to update item checked state:", err);
+      // Re-check state after revert
+      checkAndTriggerConfetti();
     } finally {
       debounceTimers.delete(index);
     }
