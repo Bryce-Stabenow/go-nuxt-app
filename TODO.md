@@ -1,4 +1,3 @@
-- Search/filter for list items
 - Delete lists
 - Reorder Lists
 - Reorder list items

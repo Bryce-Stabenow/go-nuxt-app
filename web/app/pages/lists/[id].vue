@@ -82,9 +82,64 @@
           <!-- Items Section -->
           <div class="border-t border-gray-200 pt-6">
             <div class="flex justify-between items-center mb-4">
-              <h2 class="text-xl font-semibold text-gray-900">
+              <h2
+                v-if="!isSearchOpen"
+                class="text-xl font-semibold text-gray-900"
+              >
                 Items ({{ list.items.length }})
               </h2>
+              <input
+                v-else
+                v-model="searchQuery"
+                @keydown.esc="closeSearch"
+                class="text-xl font-semibold text-gray-900 bg-transparent border-b-2 border-purple-500 focus:outline-none focus:border-purple-700 flex-1 mr-2"
+                placeholder="Search items..."
+                ref="searchInput"
+              />
+              <div class="flex items-center gap-2">
+                <button
+                  v-if="isSearchOpen"
+                  @click="closeSearch"
+                  class="p-1 text-gray-400 hover:text-purple-600 transition-colors"
+                  title="Close search"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-5 w-5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+                <button
+                  v-if="!isSearchOpen"
+                  @click="openSearch"
+                  class="p-1 text-gray-400 hover:text-purple-600 transition-colors"
+                  title="Search items"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-5 w-5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                    />
+                  </svg>
+                </button>
+              </div>
             </div>
             <div
               v-if="list.items.length === 0 && !showAddForm"
@@ -94,95 +149,6 @@
               <p class="text-sm mt-2 text-purple-600">
                 Click the button below to get started.
               </p>
-            </div>
-            <!-- Inline Add Item Form (when no items) -->
-            <div v-if="list.items.length === 0 && showAddForm" class="p-4 border-2 border-purple-300 rounded-lg bg-purple-50">
-              <form @submit.prevent="handleAddItem" class="space-y-4">
-                <div>
-                  <label
-                    for="add-item-name-empty"
-                    class="block text-sm font-medium text-gray-700 mb-2"
-                  >
-                    Name*
-                  </label>
-                  <input
-                    id="add-item-name-empty"
-                    v-model="addForm.name"
-                    type="text"
-                    required
-                    class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-purple-500 transition-colors"
-                    placeholder="Enter item name"
-                    ref="addNameInput"
-                  />
-                </div>
-
-                <div>
-                  <label
-                    for="add-item-quantity-empty"
-                    class="block text-sm font-medium text-gray-700 mb-2"
-                  >
-                    Quantity
-                  </label>
-                  <input
-                    id="add-item-quantity-empty"
-                    v-model.number="addForm.quantity"
-                    type="number"
-                    min="1"
-                    class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-purple-500 transition-colors"
-                    placeholder="1"
-                  />
-                </div>
-
-                <div>
-                  <label
-                    for="add-item-details-empty"
-                    class="block text-sm font-medium text-gray-700 mb-2"
-                  >
-                    Details
-                  </label>
-                  <textarea
-                    id="add-item-details-empty"
-                    v-model="addForm.details"
-                    maxlength="512"
-                    rows="3"
-                    class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-purple-500 transition-colors resize-none"
-                    placeholder="Add any additional details (optional)"
-                  />
-                  <div class="text-xs text-gray-500 mt-1 text-right">
-                    {{ (addForm.details || '').length }}/512
-                  </div>
-                </div>
-
-                <div v-if="addError" class="text-red-600 text-sm">
-                  {{ addError }}
-                </div>
-
-                <div class="flex gap-4 justify-center">
-                  <button
-                    type="button"
-                    @click="cancelAddForm"
-                    class="px-4 py-2 text-gray-700 border-2 border-gray-300 rounded-lg font-medium hover:bg-gray-50 transition-colors"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    :disabled="isAdding"
-                    class="flex-1 px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-700 text-white rounded-lg font-medium hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <span v-if="isAdding">Adding...</span>
-                    <span v-else>Add Item</span>
-                  </button>
-                </div>
-              </form>
-            </div>
-            <div v-if="list.items.length === 0 && !showAddForm" class="flex justify-center pt-6">
-              <button
-                @click="showAddForm = true"
-                class="px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-700 text-white rounded-lg font-medium hover:shadow-lg transition-all"
-              >
-                + Add Item
-              </button>
             </div>
             <div v-else class="space-y-5">
               <ListItem
@@ -349,6 +315,9 @@ const wasAllChecked = ref(false);
 const addNameInput = ref<HTMLInputElement | null>(null);
 const isAdding = ref(false);
 const addError = ref<string | null>(null);
+const isSearchOpen = ref(false);
+const searchQuery = ref("");
+const searchInput = ref<HTMLInputElement | null>(null);
 
 const addForm = ref({
   name: '',
@@ -357,24 +326,34 @@ const addForm = ref({
 });
 
 // Computed property to sort items: unchecked items first, checked items at the bottom
+// Also filters by search query if search is active
 const sortedItems = computed(() => {
   if (!list.value || !list.value.items) {
     return [];
   }
 
-  return list.value.items
+  let items = list.value.items
     .map((item: any, originalIndex: number) => ({
       item,
       originalIndex,
-    }))
-    .sort((a: any, b: any) => {
-      // Unchecked items (false) come before checked items (true)
-      if (a.item.checked === b.item.checked) {
-        // If both have the same checked state, maintain original order
-        return a.originalIndex - b.originalIndex;
-      }
-      return a.item.checked ? 1 : -1;
-    });
+    }));
+
+  // Filter by search query if search is active
+  if (isSearchOpen.value && searchQuery.value.trim()) {
+    const query = searchQuery.value.trim().toLowerCase();
+    items = items.filter(({ item }: any) =>
+      item.name.toLowerCase().includes(query)
+    );
+  }
+
+  return items.sort((a: any, b: any) => {
+    // Unchecked items (false) come before checked items (true)
+    if (a.item.checked === b.item.checked) {
+      // If both have the same checked state, maintain original order
+      return a.originalIndex - b.originalIndex;
+    }
+    return a.item.checked ? 1 : -1;
+  });
 });
 
 // Confetti functions (defined early so they can be used in loadList)
@@ -541,6 +520,18 @@ const cancelAddForm = () => {
     details: '',
   };
   addError.value = null;
+};
+
+const openSearch = () => {
+  isSearchOpen.value = true;
+  nextTick(() => {
+    searchInput.value?.focus();
+  });
+};
+
+const closeSearch = () => {
+  isSearchOpen.value = false;
+  searchQuery.value = "";
 };
 
 // Watch for when add form is shown to focus input
