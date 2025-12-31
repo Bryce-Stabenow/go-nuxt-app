@@ -70,6 +70,33 @@
 <script setup lang="ts">
 const { createList } = useLists();
 
+// Set page title and meta tags
+useHead({
+  title: 'GrocerMe | Create New List',
+  meta: [
+    {
+      name: 'description',
+      content: 'Create a new grocery list to organize your shopping items and never forget what you need.'
+    },
+    {
+      property: 'og:title',
+      content: 'GrocerMe | Create New List'
+    },
+    {
+      property: 'og:description',
+      content: 'Create a new grocery list to organize your shopping items and never forget what you need.'
+    },
+    {
+      property: 'og:type',
+      content: 'website'
+    },
+    {
+      name: 'robots',
+      content: 'noindex, nofollow'
+    }
+  ]
+});
+
 const name = ref("");
 const description = ref("");
 const message = ref("");

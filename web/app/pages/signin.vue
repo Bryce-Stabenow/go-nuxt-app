@@ -72,6 +72,33 @@ const config = useRuntimeConfig();
 const apiUrl = config.public.apiUrl;
 const { refreshAuth } = useAuth();
 
+// Set page title and meta tags
+useHead({
+  title: 'GrocerMe | Sign In',
+  meta: [
+    {
+      name: 'description',
+      content: 'Sign in to your GrocerMe account to access your grocery lists and manage your shopping.'
+    },
+    {
+      property: 'og:title',
+      content: 'GrocerMe | Sign In'
+    },
+    {
+      property: 'og:description',
+      content: 'Sign in to your GrocerMe account to access your grocery lists and manage your shopping.'
+    },
+    {
+      property: 'og:type',
+      content: 'website'
+    },
+    {
+      name: 'robots',
+      content: 'noindex, nofollow'
+    }
+  ]
+});
+
 const email = ref("");
 const password = ref("");
 const message = ref("");

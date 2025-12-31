@@ -115,6 +115,29 @@
 const { isAuthenticated, user, isLoading, checkAuth } = useAuth();
 const { getLists } = useLists();
 
+// Set page title and meta tags
+useHead({
+  title: 'GrocerMe | Dashboard',
+  meta: [
+    {
+      name: 'description',
+      content: 'Manage your grocery lists, view your items, and organize your shopping with GrocerMe.'
+    },
+    {
+      property: 'og:title',
+      content: 'GrocerMe | Dashboard'
+    },
+    {
+      property: 'og:description',
+      content: 'Manage your grocery lists, view your items, and organize your shopping with GrocerMe.'
+    },
+    {
+      property: 'og:type',
+      content: 'website'
+    },
+  ]
+});
+
 const lists = ref<any[]>([]);
 const listsLoading = ref(false);
 const listsError = ref<string | null>(null);

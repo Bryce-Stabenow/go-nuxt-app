@@ -38,6 +38,33 @@ const router = useRouter()
 const { isAuthenticated, checkAuth } = useAuth()
 const { shareList } = useLists()
 
+// Set page title and meta tags
+useHead({
+  title: 'GrocerMe | Join List',
+  meta: [
+    {
+      name: 'description',
+      content: 'Join a shared grocery list on GrocerMe and collaborate on your shopping.'
+    },
+    {
+      property: 'og:title',
+      content: 'GrocerMe | Join List'
+    },
+    {
+      property: 'og:description',
+      content: 'Join a shared grocery list on GrocerMe and collaborate on your shopping.'
+    },
+    {
+      property: 'og:type',
+      content: 'website'
+    },
+    {
+      name: 'robots',
+      content: 'noindex, nofollow'
+    }
+  ]
+})
+
 const isLoading = ref(true)
 const error = ref<string | null>(null)
 const success = ref(false)
