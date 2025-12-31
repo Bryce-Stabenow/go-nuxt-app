@@ -18,53 +18,8 @@
               class="px-3 py-2 text-red-600 border-2 border-red-300 rounded-lg font-medium hover:bg-red-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               title="Delete item"
             >
-              <svg
-                v-if="isDeleting"
-                xmlns="http://www.w3.org/2000/svg"
-                class="h-5 w-5"
-                viewBox="0 0 24 24"
-                fill="currentColor"
-              >
-                <circle cx="12" cy="2" r="1.5" opacity="0.3">
-                  <animate attributeName="opacity" values="0.3;1;0.3" dur="1s" repeatCount="indefinite" begin="0s" />
-                </circle>
-                <circle cx="19.07" cy="4.93" r="1.5" opacity="0.3">
-                  <animate attributeName="opacity" values="0.3;1;0.3" dur="1s" repeatCount="indefinite" begin="0.125s" />
-                </circle>
-                <circle cx="21" cy="12" r="1.5" opacity="0.3">
-                  <animate attributeName="opacity" values="0.3;1;0.3" dur="1s" repeatCount="indefinite" begin="0.25s" />
-                </circle>
-                <circle cx="19.07" cy="19.07" r="1.5" opacity="0.3">
-                  <animate attributeName="opacity" values="0.3;1;0.3" dur="1s" repeatCount="indefinite" begin="0.375s" />
-                </circle>
-                <circle cx="12" cy="21" r="1.5" opacity="0.3">
-                  <animate attributeName="opacity" values="0.3;1;0.3" dur="1s" repeatCount="indefinite" begin="0.5s" />
-                </circle>
-                <circle cx="4.93" cy="19.07" r="1.5" opacity="0.3">
-                  <animate attributeName="opacity" values="0.3;1;0.3" dur="1s" repeatCount="indefinite" begin="0.625s" />
-                </circle>
-                <circle cx="2" cy="12" r="1.5" opacity="0.3">
-                  <animate attributeName="opacity" values="0.3;1;0.3" dur="1s" repeatCount="indefinite" begin="0.75s" />
-                </circle>
-                <circle cx="4.93" cy="4.93" r="1.5" opacity="0.3">
-                  <animate attributeName="opacity" values="0.3;1;0.3" dur="1s" repeatCount="indefinite" begin="0.875s" />
-                </circle>
-              </svg>
-              <svg
-                v-else
-                xmlns="http://www.w3.org/2000/svg"
-                class="h-5 w-5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                />
-              </svg>
+              <Icon v-if="isDeleting" name="svg-spinners:ring-resize" class="h-5 w-5" />
+              <Icon v-else name="heroicons:trash" class="h-5 w-5" />
             </button>
           </div>
 

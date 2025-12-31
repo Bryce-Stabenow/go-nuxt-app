@@ -42,20 +42,7 @@
                   class="p-1 text-gray-400 hover:text-purple-600 transition-colors"
                   title="Share list"
                 >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="h-5 w-5"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
-                    />
-                  </svg>
+                  <Icon name="heroicons:share" class="h-5 w-5" />
                 </button>
                 <button
                   v-if="!isEditingName"
@@ -63,20 +50,7 @@
                   class="p-1 text-gray-400 hover:text-purple-600 transition-colors"
                   title="Edit list name"
                 >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="h-5 w-5"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                    />
-                  </svg>
+                  <Icon name="heroicons:pencil" class="h-5 w-5" />
                 </button>
                 <button
                   v-if="!isEditingName && isListOwner"
@@ -85,101 +59,8 @@
                   class="p-1 text-gray-400 hover:text-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   title="Delete list"
                 >
-                  <svg
-                    v-if="isDeletingList"
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="h-5 w-5"
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                  >
-                    <circle cx="12" cy="2" r="1.5" opacity="0.3">
-                      <animate
-                        attributeName="opacity"
-                        values="0.3;1;0.3"
-                        dur="1s"
-                        repeatCount="indefinite"
-                        begin="0s"
-                      />
-                    </circle>
-                    <circle cx="19.07" cy="4.93" r="1.5" opacity="0.3">
-                      <animate
-                        attributeName="opacity"
-                        values="0.3;1;0.3"
-                        dur="1s"
-                        repeatCount="indefinite"
-                        begin="0.125s"
-                      />
-                    </circle>
-                    <circle cx="21" cy="12" r="1.5" opacity="0.3">
-                      <animate
-                        attributeName="opacity"
-                        values="0.3;1;0.3"
-                        dur="1s"
-                        repeatCount="indefinite"
-                        begin="0.25s"
-                      />
-                    </circle>
-                    <circle cx="19.07" cy="19.07" r="1.5" opacity="0.3">
-                      <animate
-                        attributeName="opacity"
-                        values="0.3;1;0.3"
-                        dur="1s"
-                        repeatCount="indefinite"
-                        begin="0.375s"
-                      />
-                    </circle>
-                    <circle cx="12" cy="21" r="1.5" opacity="0.3">
-                      <animate
-                        attributeName="opacity"
-                        values="0.3;1;0.3"
-                        dur="1s"
-                        repeatCount="indefinite"
-                        begin="0.5s"
-                      />
-                    </circle>
-                    <circle cx="4.93" cy="19.07" r="1.5" opacity="0.3">
-                      <animate
-                        attributeName="opacity"
-                        values="0.3;1;0.3"
-                        dur="1s"
-                        repeatCount="indefinite"
-                        begin="0.625s"
-                      />
-                    </circle>
-                    <circle cx="2" cy="12" r="1.5" opacity="0.3">
-                      <animate
-                        attributeName="opacity"
-                        values="0.3;1;0.3"
-                        dur="1s"
-                        repeatCount="indefinite"
-                        begin="0.75s"
-                      />
-                    </circle>
-                    <circle cx="4.93" cy="4.93" r="1.5" opacity="0.3">
-                      <animate
-                        attributeName="opacity"
-                        values="0.3;1;0.3"
-                        dur="1s"
-                        repeatCount="indefinite"
-                        begin="0.875s"
-                      />
-                    </circle>
-                  </svg>
-                  <svg
-                    v-else
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="h-5 w-5"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    stroke-width="2"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                    />
-                  </svg>
+                  <Icon v-if="isDeletingList" name="svg-spinners:ring-resize" class="h-5 w-5" />
+                  <Icon v-else name="heroicons:trash" class="h-5 w-5" />
                 </button>
               </div>
             </div>
@@ -240,20 +121,7 @@
                   class="p-1 text-gray-400 hover:text-purple-600 transition-colors"
                   title="Close search"
                 >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="h-5 w-5"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M6 18L18 6M6 6l12 12"
-                    />
-                  </svg>
+                  <Icon name="heroicons:x-mark" class="h-5 w-5" />
                 </button>
                 <button
                   v-if="!isSearchOpen"
@@ -261,20 +129,7 @@
                   class="p-1 text-gray-400 hover:text-purple-600 transition-colors"
                   title="Search items"
                 >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="h-5 w-5"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                    />
-                  </svg>
+                  <Icon name="heroicons:magnifying-glass" class="h-5 w-5" />
                 </button>
               </div>
             </div>
