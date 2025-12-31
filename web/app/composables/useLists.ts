@@ -197,6 +197,17 @@ export const useLists = () => {
     })
   }
 
+  /**
+   * Share a list - adds the current user to the list's shared_with array
+   */
+  const shareList = async (listId: string): Promise<List> => {
+    return await $fetch<List>(`${apiUrl}/lists/share/${listId}`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: getHeaders(),
+    })
+  }
+
   return {
     createList,
     getLists,
@@ -207,6 +218,7 @@ export const useLists = () => {
     updateListItemChecked,
     deleteListItem,
     deleteList,
+    shareList,
   }
 }
 

@@ -62,6 +62,7 @@ func main() {
 	// Public routes - API endpoints
 	router.POST("/signup", handlers.HandleSignup)
 	router.POST("/signin", handlers.HandleSignin)
+	router.POST("/lists/share/:id", handlers.HandleShareList)
 
 	// Protected routes (require JWT)
 	protected := router.Group("/")

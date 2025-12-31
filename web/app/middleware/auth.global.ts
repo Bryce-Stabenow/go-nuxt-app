@@ -1,6 +1,11 @@
 export default defineNuxtRouteMiddleware(async (to) => {
   const { checkAuth } = useAuth()
   
+  // Allow share routes without authentication - they handle their own auth flow
+  if (to.path.startsWith('/lists/share/')) {
+    return
+  }
+  
   // Check authentication (uses cache if available)
   // This works on both server and client
   const authenticated = await checkAuth()

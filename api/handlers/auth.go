@@ -61,6 +61,7 @@ func HandleSignup(c *gin.Context) {
 	user := models.User{
 		ID:           primitive.NewObjectID(),
 		Email:        req.Email,
+		Username:     req.Email,
 		PasswordHash: string(hashedPassword),
 		Profile:      profile,
 		CreatedAt:    now,

@@ -1,3 +1,0 @@
-- Reorder Lists
-- Reorder list items
-- Share lists with other account via magic link

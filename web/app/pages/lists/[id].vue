@@ -38,6 +38,27 @@
               <div class="flex items-center gap-2">
                 <button
                   v-if="!isEditingName"
+                  @click="handleShareList"
+                  class="p-1 text-gray-400 hover:text-purple-600 transition-colors"
+                  title="Share list"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-5 w-5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
+                    />
+                  </svg>
+                </button>
+                <button
+                  v-if="!isEditingName"
                   @click="startEditName"
                   class="p-1 text-gray-400 hover:text-purple-600 transition-colors"
                   title="Edit list name"
@@ -58,7 +79,7 @@
                   </svg>
                 </button>
                 <button
-                  v-if="!isEditingName"
+                  v-if="!isEditingName && isListOwner"
                   @click="handleDeleteList"
                   :disabled="isDeletingList"
                   class="p-1 text-gray-400 hover:text-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
@@ -162,6 +183,14 @@
                 </button>
               </div>
             </div>
+          </div>
+
+          <!-- Share Notification -->
+          <div
+            v-if="shareNotification"
+            class="mb-4 p-3 bg-green-100 border border-green-300 text-green-800 rounded-lg text-sm"
+          >
+            {{ shareNotification }}
           </div>
 
           <div class="mb-6">
@@ -412,6 +441,7 @@ const route = useRoute();
 const router = useRouter();
 const { getList, updateList, updateListItemChecked, addListItem, deleteList } =
   useLists();
+const { user } = useAuth();
 
 const list = ref<any>(null);
 const isLoading = ref(true);
@@ -432,6 +462,7 @@ const isSearchOpen = ref(false);
 const searchQuery = ref("");
 const searchInput = ref<HTMLInputElement | null>(null);
 const isDeletingList = ref(false);
+const shareNotification = ref<string | null>(null);
 
 const addForm = ref({
   name: "",
@@ -467,6 +498,12 @@ const sortedItems = computed(() => {
     }
     return a.item.checked ? 1 : -1;
   });
+});
+
+// Check if current user is the list owner
+const isListOwner = computed(() => {
+  if (!list.value || !user.value) return false;
+  return list.value.user_id === user.value.id;
 });
 
 // Confetti functions (defined early so they can be used in loadList)
@@ -742,6 +779,42 @@ const handleItemCheckedChange = async (index: number, event: Event) => {
   }, 500); // 500ms debounce
 
   debounceTimers.set(index, timer);
+};
+
+const handleShareList = async () => {
+  if (!list.value) return;
+
+  try {
+    const shareUrl = `${window.location.origin}/lists/share/${list.value.id}`;
+    await navigator.clipboard.writeText(shareUrl);
+    
+    shareNotification.value = "Share link copied to clipboard!";
+    setTimeout(() => {
+      shareNotification.value = null;
+    }, 3000);
+  } catch (err) {
+    // Fallback for browsers that don't support clipboard API
+    const shareUrl = `${window.location.origin}/lists/share/${list.value.id}`;
+    const textArea = document.createElement("textarea");
+    textArea.value = shareUrl;
+    textArea.style.position = "fixed";
+    textArea.style.left = "-999999px";
+    document.body.appendChild(textArea);
+    textArea.select();
+    try {
+      document.execCommand("copy");
+      shareNotification.value = "Share link copied to clipboard!";
+      setTimeout(() => {
+        shareNotification.value = null;
+      }, 3000);
+    } catch (e) {
+      shareNotification.value = "Failed to copy link. Please copy manually: " + shareUrl;
+      setTimeout(() => {
+        shareNotification.value = null;
+      }, 5000);
+    }
+    document.body.removeChild(textArea);
+  }
 };
 
 const handleDeleteList = async () => {

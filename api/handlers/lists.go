@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"net/http"
+	"strings"
 	"time"
 
 	"bryce-stabenow/grocer-me/config"
@@ -10,6 +11,7 @@ import (
 	"bryce-stabenow/grocer-me/models"
 
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v5"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
@@ -234,8 +236,20 @@ func HandleUpdateList(c *gin.Context) {
 		return
 	}
 
-	// Check if user has access (only owner can update)
-	if list.UserID != userID {
+	// Check if user has access (owner or in shared_with can update)
+	hasAccess := false
+	if list.UserID == userID {
+		hasAccess = true
+	} else {
+		for _, sharedUserID := range list.SharedWith {
+			if sharedUserID == userID {
+				hasAccess = true
+				break
+			}
+		}
+	}
+
+	if !hasAccess {
 		c.JSON(http.StatusForbidden, gin.H{"error": "You do not have permission to update this list"})
 		return
 	}
@@ -786,6 +800,146 @@ func HandleDeleteList(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "List deleted successfully"})
+}
+
+// HandleShareList handles adding the current user to a list's shared_with array
+// This endpoint is public but requires authentication (checked internally)
+func HandleShareList(c *gin.Context) {
+	// Get user ID from context (set by optional JWT middleware or manual check)
+	userIDStr, exists := c.Get(middleware.UserIDKey)
+	if !exists {
+		// Try to extract token manually for this public endpoint
+		var tokenString string
+		
+		// First, try to get token from Authorization header
+		authHeader := c.GetHeader("Authorization")
+		if authHeader != "" {
+			parts := strings.Split(authHeader, " ")
+			if len(parts) == 2 && parts[0] == "Bearer" {
+				tokenString = parts[1]
+			}
+		}
+		
+		// If not in header, try to get from cookie
+		if tokenString == "" {
+			cookie, err := c.Cookie("jwt_token")
+			if err == nil && cookie != "" {
+				tokenString = cookie
+			}
+		}
+		
+		// If no token found, return error indicating authentication required
+		if tokenString == "" {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Authentication required. Please sign in to join this list."})
+			return
+		}
+		
+		// Parse and validate token
+		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+				return nil, jwt.ErrSignatureInvalid
+			}
+			return []byte(config.JWTSecret), nil
+		})
+		
+		if err != nil || !token.Valid {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid or expired token. Please sign in to join this list."})
+			return
+		}
+		
+		// Extract claims
+		claims, ok := token.Claims.(jwt.MapClaims)
+		if !ok {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token claims"})
+			return
+		}
+		
+		// Extract user ID from claims
+		userIDStr, ok = claims["user_id"].(string)
+		if !ok {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid user ID in token"})
+			return
+		}
+	}
+
+	userID, err := primitive.ObjectIDFromHex(userIDStr.(string))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID format"})
+		return
+	}
+
+	// Get list ID from URL parameter
+	listIDStr := c.Param("id")
+	listID, err := primitive.ObjectIDFromHex(listIDStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid list ID format"})
+		return
+	}
+
+	// Find list
+	collection := config.DB.Collection("lists")
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	var list models.List
+	err = collection.FindOne(ctx, bson.M{"_id": listID}).Decode(&list)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			c.JSON(http.StatusNotFound, gin.H{"error": "List not found"})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to find list"})
+		return
+	}
+
+	// Check if user is already the owner
+	if list.UserID == userID {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "You are already the owner of this list"})
+		return
+	}
+
+	// Check if user is already in shared_with array
+	alreadyShared := false
+	for _, sharedUserID := range list.SharedWith {
+		if sharedUserID == userID {
+			alreadyShared = true
+			break
+		}
+	}
+
+	if alreadyShared {
+		// User is already shared, return the list anyway (idempotent)
+		response := listToResponse(&list)
+		c.JSON(http.StatusOK, response)
+		return
+	}
+
+	// Add user to shared_with array
+	now := time.Now()
+	_, err = collection.UpdateOne(
+		ctx,
+		bson.M{"_id": listID},
+		bson.M{
+			"$addToSet": bson.M{"shared_with": userID},
+			"$set":      bson.M{"updated_at": now},
+		},
+	)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to add user to shared list"})
+		return
+	}
+
+	// Fetch the updated list to return
+	var updatedList models.List
+	err = collection.FindOne(ctx, bson.M{"_id": listID}).Decode(&updatedList)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve updated list"})
+		return
+	}
+
+	// Convert to response format
+	response := listToResponse(&updatedList)
+	c.JSON(http.StatusOK, response)
 }
 
 // listToResponse converts a List model to ListResponse

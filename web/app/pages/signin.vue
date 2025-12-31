@@ -79,8 +79,12 @@ const handleSubmit = async () => {
     // Refresh auth state to update the flag
     await refreshAuth()
     
-    // Redirect to dashboard after successful signin
-    await navigateTo('/dashboard')
+    // Check for redirect parameter
+    const route = useRoute()
+    const redirectPath = route.query.redirect as string | undefined
+    
+    // Redirect to specified path or dashboard
+    await navigateTo(redirectPath || '/dashboard')
   } catch (error: any) {
     messageType.value = 'error'
     message.value = 'Error: ' + (error.data?.error || error.message || 'Invalid email or password')
