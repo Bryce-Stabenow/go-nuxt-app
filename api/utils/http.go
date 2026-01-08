@@ -62,7 +62,7 @@ func SetPathParams(r *http.Request, params map[string]string) *http.Request {
 	return r.WithContext(ctx)
 }
 
-// SetCookie sets an HTTP cookie
+// SetCookie sets an HTTP cookie with SameSite=None for cross-origin support
 func SetCookie(w http.ResponseWriter, name, value string, maxAge int, path, domain string, secure, httpOnly bool) {
 	cookie := &http.Cookie{
 		Name:     name,
@@ -72,6 +72,7 @@ func SetCookie(w http.ResponseWriter, name, value string, maxAge int, path, doma
 		Domain:   domain,
 		Secure:   secure,
 		HttpOnly: httpOnly,
+		SameSite: http.SameSiteNoneMode, // Required for cross-origin cookie support
 	}
 	http.SetCookie(w, cookie)
 }

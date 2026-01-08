@@ -3,15 +3,17 @@ package config
 import (
 	"log"
 	"os"
+	"strings"
 
 	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
 var (
-	JWTSecret   string
-	MongoClient *mongo.Client
-	DB          *mongo.Database
+	JWTSecret    string
+	MongoClient  *mongo.Client
+	DB           *mongo.Database
+	SecureCookie bool // Whether to set Secure flag on cookies (required for SameSite=None in production)
 )
 
 func Init() {
@@ -23,6 +25,10 @@ func Init() {
 	if JWTSecret == "" {
 		log.Fatal("JWT_SECRET environment variable is not set. Please create a .env file or set the environment variable.")
 	}
+
+	// Determine if secure cookies should be used (for HTTPS/production)
+	// Default to false for development, set SECURE_COOKIE=true in production
+	SecureCookie = strings.ToLower(os.Getenv("SECURE_COOKIE")) == "true"
 
 	// MongoDB client should be set by main.go after connection
 }

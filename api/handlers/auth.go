@@ -81,7 +81,8 @@ func HandleSignup(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Set JWT as HTTP-only cookie (24 hours expiration to match token)
-	utils.SetCookie(w, "jwt_token", token, 3600*24, "/", "", false, true)
+	// SecureCookie should be true in production (HTTPS) for SameSite=None to work
+	utils.SetCookie(w, "jwt_token", token, 3600*24, "/", "", config.SecureCookie, true)
 
 	// Return response
 	utils.JSONResponse(w, http.StatusCreated, models.AuthResponse{
@@ -135,7 +136,8 @@ func HandleSignin(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Set JWT as HTTP-only cookie (24 hours expiration to match token)
-	utils.SetCookie(w, "jwt_token", token, 3600*24, "/", "", false, true)
+	// SecureCookie should be true in production (HTTPS) for SameSite=None to work
+	utils.SetCookie(w, "jwt_token", token, 3600*24, "/", "", config.SecureCookie, true)
 
 	// Return response
 	utils.JSONResponse(w, http.StatusOK, models.AuthResponse{
@@ -181,7 +183,8 @@ func HandleGetMe(w http.ResponseWriter, r *http.Request) {
 // HandleLogout handles user logout by clearing the JWT cookie
 func HandleLogout(w http.ResponseWriter, r *http.Request) {
 	// Clear the JWT cookie by setting it with an expired expiration time
-	utils.SetCookie(w, "jwt_token", "", -1, "/", "", false, true)
+	// Must use same cookie attributes as when setting the cookie
+	utils.SetCookie(w, "jwt_token", "", -1, "/", "", config.SecureCookie, true)
 	
 	utils.JSONResponse(w, http.StatusOK, map[string]string{"message": "Logged out successfully"})
 }
