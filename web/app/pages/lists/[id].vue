@@ -144,7 +144,7 @@
                 Click the button below to get started.
               </p>
             </div>
-            <div v-else class="space-y-5">
+            <div v-else class="space-y-3">
               <ListItem
                 v-for="(sortedItem, displayIndex) in sortedItems"
                 :key="sortedItem.originalIndex"
@@ -249,6 +249,22 @@
             </div>
           </div>
 
+          <div
+            v-if="checkedItemIndexes.length > 0"
+            class="flex justify-center pt-6"
+          >
+            <button
+              @click="handleClearCheckedItems"
+              :disabled="isClearingCheckedItems"
+              class="px-4 py-2 border-2 border-gray-300 rounded-lg font-medium text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <span v-if="isClearingCheckedItems">Clearing...</span>
+              <span v-else>
+                Clear checked items ({{ checkedItemIndexes.length }})
+              </span>
+            </button>
+          </div>
+
           <!-- Shared With Section -->
           <div
             v-if="list.shared_with.length > 0"
@@ -296,8 +312,14 @@ import confetti from "canvas-confetti";
 
 const route = useRoute();
 const router = useRouter();
-const { getList, updateList, updateListItemChecked, addListItem, deleteList } =
-  useLists();
+const {
+  getList,
+  updateList,
+  updateListItemChecked,
+  addListItem,
+  deleteListItem,
+  deleteList,
+} = useLists();
 const { user } = useAuth();
 
 useHead({
@@ -346,6 +368,7 @@ const searchQuery = ref("");
 const searchInput = ref<HTMLInputElement | null>(null);
 const isDeletingList = ref(false);
 const shareNotification = ref<string | null>(null);
+const isClearingCheckedItems = ref(false);
 
 const addForm = ref({
   name: "",
@@ -381,6 +404,16 @@ const sortedItems = computed(() => {
     }
     return a.item.checked ? 1 : -1;
   });
+});
+
+const checkedItemIndexes = computed(() => {
+  if (!list.value || !list.value.items) {
+    return [];
+  }
+
+  return list.value.items
+    .map((item: any, index: number) => (item.checked ? index : -1))
+    .filter((index: number) => index !== -1);
 });
 
 // Check if current user is the list owner
@@ -720,6 +753,44 @@ const handleDeleteList = async () => {
   } catch (err: any) {
     error.value = err.data?.error || err.message || "Failed to delete list";
     isDeletingList.value = false;
+  }
+};
+
+const handleClearCheckedItems = async () => {
+  if (!list.value || isClearingCheckedItems.value) return;
+
+  const indexesToClear = [...checkedItemIndexes.value].sort((a, b) => b - a);
+  if (indexesToClear.length === 0) return;
+
+  if (
+    !confirm(
+      "Remove all checked items from this list? This action cannot be undone."
+    )
+  ) {
+    return;
+  }
+
+  isClearingCheckedItems.value = true;
+  error.value = null;
+
+  debounceTimers.forEach((timer) => clearTimeout(timer));
+  debounceTimers.clear();
+
+  try {
+    const listId = route.params.id as string;
+    let updatedList = list.value;
+
+    for (const index of indexesToClear) {
+      updatedList = await deleteListItem(listId, index);
+    }
+
+    list.value = updatedList;
+    checkAndTriggerConfetti();
+  } catch (err: any) {
+    error.value =
+      err.data?.error || err.message || "Failed to clear checked items";
+  } finally {
+    isClearingCheckedItems.value = false;
   }
 };
 

@@ -1,7 +1,7 @@
 <template>
   <div class="flex items-stretch gap-0 p-0 overflow-hidden rounded-lg">
     <div
-      class="flex-1 p-4 border-2 border-r-0 rounded-l-lg transition-colors cursor-pointer"
+      class="flex-1 p-2 md:p-4 border-2 border-r-0 rounded-l-lg transition-colors cursor-pointer"
       :class="
         item.checked
           ? 'border-gray-300 bg-gray-50'
