@@ -1,0 +1,22 @@
+services:
+  api:
+    build:
+      context: ./api
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    environment:
+      PORT: "8080"
+    restart: unless-stopped
+
+  web:
+    build:
+      context: ./web
+    ports:
+      - "3000:3000"
+    environment:
+      NUXT_PUBLIC_API_URL: ${NUXT_PUBLIC_API_URL}
+    depends_on:
+      - api
+    restart: unless-stopped
