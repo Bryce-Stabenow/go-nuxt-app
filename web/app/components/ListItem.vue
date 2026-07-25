@@ -1,12 +1,21 @@
 <template>
   <div class="flex items-stretch gap-0 p-0 overflow-hidden rounded-lg">
     <div
-      class="flex-1 p-2 md:p-4 border-2 border-r-0 rounded-l-lg transition-colors cursor-pointer"
-      :class="
+      v-if="draggable"
+      class="drag-handle flex items-center justify-center px-1 md:px-2 border-2 border-r-0 rounded-l-lg bg-gray-50 border-gray-200 text-gray-400 cursor-grab active:cursor-grabbing touch-none select-none"
+      aria-label="Drag to reorder"
+      @click.stop
+    >
+      <Icon name="heroicons:bars-3" class="h-5 w-5" />
+    </div>
+    <div
+      class="flex-1 p-2 md:p-4 border-2 border-r-0 transition-colors cursor-pointer"
+      :class="[
+        draggable ? '' : 'rounded-l-lg',
         item.checked
           ? 'border-gray-300 bg-gray-50'
-          : 'border-gray-200 hover:border-purple-300'
-      "
+          : 'border-gray-200 hover:border-purple-300',
+      ]"
       @click="handleItemClick"
     >
       <div class="flex items-center gap-2">
@@ -59,9 +68,12 @@ interface Props {
     details?: string;
   };
   originalIndex: number;
+  draggable?: boolean;
 }
 
-const props = defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+  draggable: false,
+});
 
 const emit = defineEmits<{
   toggle: [index: number];

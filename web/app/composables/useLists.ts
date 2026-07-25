@@ -54,6 +54,10 @@ export const useLists = () => {
     index: number;
   }
 
+  interface ReorderListItemsRequest {
+    order: number[];
+  }
+
   /**
    * Get headers with cookie forwarding for server-side requests
    */
@@ -196,6 +200,25 @@ export const useLists = () => {
   };
 
   /**
+   * Reorder a list's items. `order` is a permutation of the current item
+   * indices: element i holds the current index of the item that should move
+   * to position i.
+   */
+  const reorderListItems = async (
+    listId: string,
+    order: number[]
+  ): Promise<List> => {
+    return await $fetch<List>(`${apiUrl}/lists/${listId}/items/reorder`, {
+      method: "PUT",
+      credentials: "include",
+      headers: getHeaders(),
+      body: {
+        order,
+      } as ReorderListItemsRequest,
+    });
+  };
+
+  /**
    * Delete a list
    */
   const deleteList = async (listId: string): Promise<void> => {
@@ -226,6 +249,7 @@ export const useLists = () => {
     updateListItem,
     updateListItemChecked,
     deleteListItem,
+    reorderListItems,
     deleteList,
     shareList,
   };

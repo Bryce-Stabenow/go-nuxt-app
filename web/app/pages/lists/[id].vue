@@ -145,11 +145,52 @@
               </p>
             </div>
             <div v-else class="space-y-3">
+              <!-- Active items: draggable to reorder via the grip handle -->
+              <ClientOnly>
+                <draggable
+                  v-model="uncheckedItems"
+                  item-key="originalIndex"
+                  handle=".drag-handle"
+                  :disabled="isSearchActive"
+                  :animation="150"
+                  :force-fallback="true"
+                  ghost-class="opacity-50"
+                  fallback-class="shadow-lg"
+                  tag="div"
+                  class="space-y-3"
+                >
+                  <template #item="{ element }">
+                    <ListItem
+                      :item="element.item"
+                      :original-index="element.originalIndex"
+                      :draggable="!isSearchActive"
+                      @toggle="toggleItemChecked"
+                      @change="handleItemCheckedChange"
+                      @click="openEditModal"
+                    />
+                  </template>
+                </draggable>
+                <!-- SSR/no-JS fallback: render active items without drag -->
+                <template #fallback>
+                  <div class="space-y-3">
+                    <ListItem
+                      v-for="uncheckedItem in uncheckedItems"
+                      :key="uncheckedItem.originalIndex"
+                      :item="uncheckedItem.item"
+                      :original-index="uncheckedItem.originalIndex"
+                      @toggle="toggleItemChecked"
+                      @change="handleItemCheckedChange"
+                      @click="openEditModal"
+                    />
+                  </div>
+                </template>
+              </ClientOnly>
+              <!-- Checked items: sunk to the bottom, not reorderable -->
               <ListItem
-                v-for="(sortedItem, displayIndex) in sortedItems"
-                :key="sortedItem.originalIndex"
-                :item="sortedItem.item"
-                :original-index="sortedItem.originalIndex"
+                v-for="checkedItem in checkedItems"
+                :key="checkedItem.originalIndex"
+                :item="checkedItem.item"
+                :original-index="checkedItem.originalIndex"
                 @toggle="toggleItemChecked"
                 @change="handleItemCheckedChange"
                 @click="openEditModal"
@@ -309,6 +350,7 @@
 
 <script setup lang="ts">
 import confetti from "canvas-confetti";
+import draggable from "vuedraggable";
 
 const route = useRoute();
 const router = useRouter();
@@ -318,6 +360,7 @@ const {
   updateListItemChecked,
   addListItem,
   deleteListItem,
+  reorderListItems,
   deleteList,
 } = useLists();
 const { user } = useAuth();
@@ -376,11 +419,17 @@ const addForm = ref({
   details: "",
 });
 
-// Computed property to sort items: unchecked items first, checked items at the bottom
-// Also filters by search query if search is active
-const sortedItems = computed(() => {
+// True when the search filter is actively narrowing the list. Reordering is
+// disabled in this state because the drag would only see a subset of items.
+const isSearchActive = computed(
+  () => isSearchOpen.value && searchQuery.value.trim().length > 0
+);
+
+// Items paired with their index in the underlying list.items array (the app's
+// item identity), optionally filtered by the active search query.
+const mappedItems = computed(() => {
   if (!list.value || !list.value.items) {
-    return [];
+    return [] as { item: any; originalIndex: number }[];
   }
 
   let items = list.value.items.map((item: any, originalIndex: number) => ({
@@ -388,23 +437,64 @@ const sortedItems = computed(() => {
     originalIndex,
   }));
 
-  // Filter by search query if search is active
-  if (isSearchOpen.value && searchQuery.value.trim()) {
+  if (isSearchActive.value) {
     const query = searchQuery.value.trim().toLowerCase();
     items = items.filter(({ item }: any) =>
       item.name.toLowerCase().includes(query)
     );
   }
 
-  return items.sort((a: any, b: any) => {
-    // Unchecked items (false) come before checked items (true)
-    if (a.item.checked === b.item.checked) {
-      // If both have the same checked state, maintain original order
-      return a.originalIndex - b.originalIndex;
-    }
-    return a.item.checked ? 1 : -1;
-  });
+  return items;
 });
+
+// Checked items always sink to the bottom, in their existing array order.
+const checkedItems = computed(() =>
+  mappedItems.value.filter(({ item }: any) => item.checked)
+);
+
+// Unchecked (active) items are the draggable group. The writable setter is
+// invoked by vuedraggable's v-model when the user drops an item in a new spot.
+const uncheckedItems = computed<{ item: any; originalIndex: number }[]>({
+  get() {
+    return mappedItems.value.filter(({ item }: any) => !item.checked);
+  },
+  set(newUnchecked) {
+    applyReorder(newUnchecked);
+  },
+});
+
+// Persist a manual reorder of the unchecked group. The new full-array order is
+// the reordered unchecked items followed by the checked items (kept at the
+// bottom, in their current order). Optimistically update, then resync from the
+// server response — mirroring handleItemCheckedChange.
+const applyReorder = (
+  newUnchecked: { item: any; originalIndex: number }[]
+) => {
+  if (!list.value || !list.value.items) return;
+
+  const order = [
+    ...newUnchecked.map((entry) => entry.originalIndex),
+    ...checkedItems.value.map((entry) => entry.originalIndex),
+  ];
+
+  // Guard against a partial ordering (e.g. if a search filter were active).
+  if (order.length !== list.value.items.length) return;
+
+  const previousItems = list.value.items;
+  const reordered = order.map((idx) => previousItems[idx]);
+  list.value = { ...list.value, items: reordered };
+
+  const listId = route.params.id as string;
+  reorderListItems(listId, order)
+    .then((updatedList) => {
+      list.value = updatedList;
+    })
+    .catch((err: any) => {
+      // Revert on error
+      list.value = { ...list.value, items: previousItems };
+      console.error("Failed to reorder items:", err);
+    });
+};
 
 const checkedItemIndexes = computed(() => {
   if (!list.value || !list.value.items) {

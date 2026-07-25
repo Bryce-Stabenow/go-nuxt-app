@@ -66,6 +66,13 @@ type DeleteListItemRequest struct {
 	Index *int `json:"index" binding:"required"`
 }
 
+// ReorderListItemsRequest represents the request body for reordering a list's items.
+// Order is a permutation of 0..len(items)-1: element i holds the current index of
+// the item that should move to position i.
+type ReorderListItemsRequest struct {
+	Order []int `json:"order" binding:"required"`
+}
+
 // SharedUser represents a user that a list is shared with
 type SharedUser struct {
 	ID    string `json:"id"`

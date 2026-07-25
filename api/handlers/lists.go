@@ -558,6 +558,95 @@ func HandleDeleteListItem(w http.ResponseWriter, r *http.Request) {
 	utils.JSONResponse(w, http.StatusOK, response)
 }
 
+// HandleReorderListItems handles reordering the items in a list
+func HandleReorderListItems(w http.ResponseWriter, r *http.Request) {
+	// Get authenticated user ID
+	userID, ok := utils.GetAuthenticatedUser(w, r)
+	if !ok {
+		return // Error response already sent
+	}
+
+	// Get and validate list ID
+	listID, ok := utils.GetAndValidateListID(w, r)
+	if !ok {
+		return // Error response already sent
+	}
+
+	// Parse request body
+	var req models.ReorderListItemsRequest
+	if err := utils.DecodeJSON(r, &req); err != nil {
+		utils.ErrorResponse(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	// Fetch list and verify access
+	list, ok := utils.FetchList(w, listID)
+	if !ok {
+		return // Error response already sent
+	}
+
+	// Check if user has access
+	if !utils.CheckListAccess(w, list, userID) {
+		return // Error response already sent
+	}
+
+	// Validate that order is a permutation of 0..len(items)-1. This guarantees
+	// the reorder neither drops nor duplicates any item.
+	n := len(list.Items)
+	if len(req.Order) != n {
+		utils.ErrorResponse(w, http.StatusBadRequest, "Order must contain exactly one entry per item")
+		return
+	}
+
+	seen := make([]bool, n)
+	for _, idx := range req.Order {
+		if idx < 0 || idx >= n || seen[idx] {
+			utils.ErrorResponse(w, http.StatusBadRequest, "Order must be a permutation of item indices")
+			return
+		}
+		seen[idx] = true
+	}
+
+	// Build the reordered items slice
+	reorderedItems := make([]models.ListItem, n)
+	for i, idx := range req.Order {
+		reorderedItems[i] = list.Items[idx]
+	}
+
+	// Update the items array and updated_at in the database
+	collection := config.DB.Collection("lists")
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	now := time.Now()
+	_, err := collection.UpdateOne(
+		ctx,
+		bson.M{"_id": listID},
+		bson.M{
+			"$set": bson.M{
+				"items":      reorderedItems,
+				"updated_at": now,
+			},
+		},
+	)
+	if err != nil {
+		utils.ErrorResponse(w, http.StatusInternalServerError, "Failed to reorder items")
+		return
+	}
+
+	// Fetch the updated list to return
+	var updatedList models.List
+	err = collection.FindOne(ctx, bson.M{"_id": listID}).Decode(&updatedList)
+	if err != nil {
+		utils.ErrorResponse(w, http.StatusInternalServerError, "Failed to retrieve updated list")
+		return
+	}
+
+	// Convert to response format
+	response := listToResponse(&updatedList)
+	utils.JSONResponse(w, http.StatusOK, response)
+}
+
 // HandleDeleteList handles deleting a list
 func HandleDeleteList(w http.ResponseWriter, r *http.Request) {
 	// Get authenticated user ID

@@ -79,6 +79,7 @@ func main() {
 	router.PUT("/lists/:id/items", withAuth(handlers.HandleUpdateListItem))
 	router.DELETE("/lists/:id/items", withAuth(handlers.HandleDeleteListItem))
 	router.PUT("/lists/:id/items/checked", withAuth(handlers.HandleUpdateListItemChecked))
+	router.PUT("/lists/:id/items/reorder", withAuth(handlers.HandleReorderListItems))
 
 	// Get port from environment or default to 8080
 	port := os.Getenv("PORT")
