@@ -46,18 +46,25 @@
         </div>
 
         <div
-          v-if="listsLoading"
-          class="text-center text-gray-600 text-base py-5"
+          v-if="listsLoading || !isOrderReady"
+          key="lists-loading"
+          class="py-10"
         >
-          Loading lists...
+          <div class="flex justify-center">
+            <Icon
+              name="svg-spinners:ring-resize"
+              class="h-12 w-12 text-purple-600"
+            />
+          </div>
         </div>
-        
-        <div v-else-if="listsError" class="text-center text-red-800 py-5">
+
+        <div v-else-if="listsError" key="lists-error" class="text-center text-red-800 py-5">
           <p class="mb-5 text-base">Error: {{ listsError }}</p>
         </div>
-        
+
         <div
           v-else-if="lists.length === 0"
+          key="lists-empty"
           class="text-center text-gray-600 py-10"
         >
           <p class="mb-5 text-base">You don't have any lists yet.</p>
@@ -68,23 +75,41 @@
             Create Your First List
           </NuxtLink>
         </div>
-        
-        <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <DashboardList
-            v-for="list in lists"
-            :key="list.id"
-            :list="list"
-            :is-shared="isSharedList(list)"
-          />
-        </div>
+
+        <!-- tag="section" (not a div) so Vue can't reuse the spinner's div as
+             this root and leak its classes onto the list -->
+        <draggable
+          v-else
+          key="lists"
+          v-model="orderedLists"
+          item-key="id"
+          handle=".drag-handle"
+          :animation="150"
+          :force-fallback="true"
+          ghost-class="opacity-50"
+          tag="section"
+          class="space-y-4"
+          @end="onDragEnd"
+        >
+          <template #item="{ element }">
+            <DashboardList
+              :list="element"
+              :is-shared="isSharedList(element)"
+              draggable
+            />
+          </template>
+        </draggable>
       </div>
     </div>
   </PageContainer>
 </template>
 
 <script setup lang="ts">
+import draggable from "vuedraggable";
+
 const { isAuthenticated, user, isLoading, checkAuth } = useAuth();
 const { getLists } = useLists();
+const { loadOrder, saveOrder, applyOrder } = useListOrder();
 
 // Set page title and meta tags
 useHead({
@@ -112,6 +137,53 @@ useHead({
 const lists = ref<any[]>([]);
 const listsLoading = ref(false);
 const listsError = ref<string | null>(null);
+
+// The user's manual list order (array of list IDs), loaded from localStorage.
+const savedOrder = ref<string[]>([]);
+// Whether the saved order has been read on the client. Until this is true we
+// hold a spinner so the list is never shown in server order and then visibly
+// re-sorted (no layout shift on load). localStorage is client-only, so this
+// stays false during SSR.
+const isOrderReady = ref(false);
+
+// Load the saved order once the authenticated user is known (client-only).
+watch(
+  () => user.value?.id,
+  (userId) => {
+    if (!userId) return;
+    savedOrder.value = loadOrder(userId);
+    if (import.meta.client) isOrderReady.value = true;
+  },
+  { immediate: true }
+);
+
+// Lists in the user's manual order. Unseen lists (new/newly-shared) float to
+// the top until dragged into place. The writable setter persists a new order
+// when vuedraggable emits a reorder.
+const orderedLists = computed<any[]>({
+  get() {
+    return applyOrder(lists.value, savedOrder.value);
+  },
+  set(newList) {
+    const newOrder = newList.map((list) => list.id);
+    savedOrder.value = newOrder;
+    if (user.value?.id) saveOrder(user.value.id, newOrder);
+  },
+});
+
+// After a drag, the browser fires a click on the card the pointer was
+// released over. Since each card is a link, that click would navigate away.
+// Swallow just that one trailing click (capture phase, before it reaches the
+// link), then clean up shortly after in case no click follows.
+const onDragEnd = (): void => {
+  const suppressClick = (event: MouseEvent) => {
+    event.preventDefault();
+    event.stopPropagation();
+    document.removeEventListener("click", suppressClick, true);
+  };
+  document.addEventListener("click", suppressClick, true);
+  setTimeout(() => document.removeEventListener("click", suppressClick, true), 300);
+};
 
 // Check if a list is shared (not owned by current user)
 const isSharedList = (list: any): boolean => {
