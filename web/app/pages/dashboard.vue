@@ -1,78 +1,77 @@
 <template>
   <PageContainer>
-    <div class="max-w-4xl mx-auto">
-      <div class="bg-white rounded-xl shadow-2xl py-2 mb-6">
-        <h1 class="text-3xl font-bold text-gray-900 mb-2 text-center">
+    <div class="max-w-3xl mx-auto">
+      <div class="mb-10">
+        <p class="eyebrow mb-3 flex items-center gap-3">
+          <span class="inline-block h-px w-8 bg-brass"></span>
           Dashboard
-        </h1>
-        
-        <div v-if="isLoading" class="text-center text-gray-600 text-base py-5">
-          Loading...
+        </p>
+        <div v-if="isLoading" class="font-mono text-sm text-mist py-2">
+          Opening the ledger…
         </div>
-        <div v-else-if="isAuthenticated && user">
-          <p class="text-gray-900 text-lg leading-relaxed text-center">
-            Welcome,
-            <strong class="text-purple-600 font-semibold">{{
-              user.profile.first_name
-            }}</strong>
-          </p>
-        </div>
-        <div v-else class="text-center text-red-800 py-5">
-          <p class="mb-5 text-base">
-            You are not authenticated. Please sign in.
-          </p>
-          <NuxtLink
-            to="/signin"
-            class="inline-block px-6 py-3 bg-gradient-to-r from-purple-500 to-purple-700 text-white rounded-lg font-semibold no-underline transition-transform hover:-translate-y-0.5 hover:shadow-lg"
+        <template v-else-if="isAuthenticated && user">
+          <h1
+            class="font-display text-4xl font-extrabold tracking-tight text-cloud sm:text-5xl"
           >
-            Sign In
-          </NuxtLink>
+            Hello,
+            <span class="text-brass">{{ user.profile.first_name }}</span>.
+          </h1>
+          <p class="mt-3 font-mono text-sm text-mist">
+            Here's what's on the books.
+          </p>
+        </template>
+        <div v-else class="ticket ticket-ruled p-6 pt-7">
+          <p class="mb-5 text-mist">You're signed out. Pick up where you left off.</p>
+          <NuxtLink to="/signin" class="btn-gold no-underline">Sign In</NuxtLink>
         </div>
       </div>
 
       <!-- Lists Section -->
-      <div
-        v-if="isAuthenticated && !isLoading"
-        class="bg-white rounded-xl shadow-2xl py-10 px-4"
-      >
-        <div class="flex justify-between items-center mb-6">
-          <h2 class="text-2xl font-bold text-gray-900">My Lists</h2>
+      <div v-if="isAuthenticated && !isLoading">
+        <div class="mb-6 flex items-end justify-between">
+          <h2 class="font-display text-2xl font-bold text-cloud">My Lists</h2>
           <NuxtLink
             to="/lists/new"
-            class="inline-block px-6 py-3 bg-gradient-to-r from-purple-500 to-purple-700 text-white rounded-lg font-semibold no-underline transition-transform hover:-translate-y-0.5 hover:shadow-lg"
+            class="btn-gold no-underline !px-4"
+            aria-label="Create a new list"
           >
-            +
+            <Icon name="heroicons:plus" class="h-4 w-4" />
+            New
           </NuxtLink>
         </div>
 
         <div
           v-if="listsLoading || !isOrderReady"
           key="lists-loading"
-          class="py-10"
+          class="py-16"
         >
           <div class="flex justify-center">
             <Icon
               name="svg-spinners:ring-resize"
-              class="h-12 w-12 text-purple-600"
+              class="h-10 w-10 text-brass"
             />
           </div>
         </div>
 
-        <div v-else-if="listsError" key="lists-error" class="text-center text-red-800 py-5">
-          <p class="mb-5 text-base">Error: {{ listsError }}</p>
+        <div
+          v-else-if="listsError"
+          key="lists-error"
+          class="band band-error"
+        >
+          {{ listsError }}
         </div>
 
         <div
           v-else-if="lists.length === 0"
           key="lists-empty"
-          class="text-center text-gray-600 py-10"
+          class="ticket ticket-ruled px-6 py-14 text-center"
         >
-          <p class="mb-5 text-base">You don't have any lists yet.</p>
-          <NuxtLink
-            to="/lists/new"
-            class="inline-block px-6 py-3 bg-gradient-to-r from-purple-500 to-purple-700 text-white rounded-lg font-semibold no-underline transition-transform hover:-translate-y-0.5 hover:shadow-lg"
-          >
-            Create Your First List
+          <p class="eyebrow-mist mb-3">A blank ledger</p>
+          <p class="mb-7 font-display text-2xl font-bold text-cloud">
+            No lists on the books yet.
+          </p>
+          <NuxtLink to="/lists/new" class="btn-gold no-underline">
+            Start your first list
           </NuxtLink>
         </div>
 

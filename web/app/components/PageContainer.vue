@@ -1,7 +1,5 @@
 <template>
-  <div
-    class="min-h-screen bg-gradient-to-br from-purple-500 to-purple-700 px-4 py-10"
-  >
+  <div class="min-h-[calc(100vh-4.75rem)] px-4 py-10 sm:py-14">
     <slot />
   </div>
 </template>

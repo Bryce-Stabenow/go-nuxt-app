@@ -1,25 +1,43 @@
 <template>
   <div class="min-h-screen flex flex-col">
-    <header class="bg-white shadow-sm border-b">
-      <nav class="container mx-auto px-4 py-4">
+    <header
+      class="sticky top-0 z-40 border-b border-white/10 bg-ink/85 backdrop-blur-md"
+    >
+      <nav class="mx-auto max-w-5xl px-4 py-3.5">
         <div class="flex items-center justify-between">
-          <NuxtLink to="/" class="text-2xl font-bold text-gray-900 hover:text-purple-600 transition-colors">
-            GrocerMe
+          <NuxtLink
+            to="/"
+            class="group flex items-baseline gap-2 no-underline"
+          >
+            <span
+              class="font-display text-2xl font-extrabold tracking-tight text-cloud transition-colors group-hover:text-brass"
+            >
+              Grocer<span class="text-brass">Me</span>
+            </span>
+            <span class="eyebrow-mist hidden sm:inline">the list, kept</span>
           </NuxtLink>
-          <div class="flex gap-4 items-center">
+          <div class="flex items-center gap-2 sm:gap-3">
             <template v-if="isAuthenticated">
-              <NuxtLink to="/dashboard" class="text-gray-700 hover:text-purple-600 hover:underline transition-colors">
+              <NuxtLink
+                to="/dashboard"
+                class="rounded-ticket px-3 py-1.5 font-mono text-xs font-bold uppercase tracking-[0.12em] text-mist no-underline transition-colors hover:text-brass"
+              >
                 Dashboard
               </NuxtLink>
               <button
                 @click="handleSignOut"
-                class="text-gray-700 hover:text-purple-600 hover:underline transition-colors"
+                class="flex items-center justify-center rounded-ticket border border-white/15 p-2 text-mist transition-colors hover:border-brass/50 hover:text-brass"
+                title="Sign out"
+                aria-label="Sign out"
               >
-                Sign Out
+                <Icon name="heroicons:power" class="h-5 w-5" />
               </button>
             </template>
             <template v-else>
-              <NuxtLink to="/signin" class="text-gray-700 hover:text-purple-600 hover:underline transition-colors">
+              <NuxtLink
+                to="/signin"
+                class="rounded-ticket border border-white/15 px-3 py-1.5 font-mono text-xs font-bold uppercase tracking-[0.12em] text-mist no-underline transition-colors hover:border-brass/50 hover:text-brass"
+              >
                 Sign In
               </NuxtLink>
             </template>

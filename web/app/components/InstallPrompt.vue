@@ -1,22 +1,21 @@
 <template>
-  <div v-if="showPrompt" class="fixed bottom-4 left-4 right-4 bg-white shadow-lg rounded-lg p-4 flex items-center justify-between z-50 border border-gray-200">
+  <div
+    v-if="showPrompt"
+    class="ticket ticket-ruled fixed bottom-4 left-4 right-4 z-50 mx-auto flex max-w-md items-center justify-between gap-4 p-4 pt-5"
+  >
     <div class="flex-1">
-      <h3 class="font-semibold text-gray-900">Install GrocerMe</h3>
-      <p class="text-sm text-gray-600">Install our app for a better experience</p>
+      <p class="eyebrow mb-0.5">Keep it handy</p>
+      <h3 class="font-display font-bold text-cloud">Install GrocerMe</h3>
+      <p class="font-mono text-xs text-mist">Works offline, opens like an app.</p>
     </div>
-    <div class="flex gap-2 ml-4">
-      <button 
-        @click="dismiss" 
-        class="px-3 py-1 text-sm text-gray-600 hover:text-gray-900 transition-colors"
+    <div class="flex shrink-0 items-center gap-2">
+      <button
+        @click="dismiss"
+        class="font-mono text-xs font-bold uppercase tracking-[0.12em] text-mist transition-colors hover:text-brass"
       >
         Later
       </button>
-      <button 
-        @click="install" 
-        class="px-4 py-2 text-sm bg-green-500 text-white rounded hover:bg-green-600 transition-colors"
-      >
-        Install
-      </button>
+      <button @click="install" class="btn-gold !px-4 !py-2">Install</button>
     </div>
   </div>
 </template>

@@ -1,42 +1,34 @@
 <template>
   <PageContainer>
-    <div class="flex items-center justify-center">
-      <div class="bg-white rounded-xl shadow-2xl py-10 px-4 max-w-md w-full">
-        <div v-if="isLoading" class="text-center">
-          <div class="mb-4">
-            <Icon
-              name="svg-spinners:ring-resize"
-              class="h-12 w-12 text-purple-600 mx-auto"
-            />
-          </div>
-          <p class="text-gray-700 text-lg">{{ loadingMessage }}</p>
+    <div class="mx-auto flex max-w-md items-center justify-center">
+      <div class="ticket ticket-ruled w-full p-8 pt-9 text-center">
+        <div v-if="isLoading">
+          <Icon
+            name="svg-spinners:ring-resize"
+            class="mx-auto mb-5 h-11 w-11 text-brass"
+          />
+          <p class="eyebrow-mist mb-1">Joining</p>
+          <p class="font-display text-xl font-bold text-cloud">{{ loadingMessage }}</p>
         </div>
-        <div v-else-if="error" class="text-center">
-          <div class="mb-4">
-            <Icon
-              name="heroicons:exclamation-circle"
-              class="h-12 w-12 text-red-600 mx-auto"
-            />
-          </div>
-          <p class="text-red-800 text-lg mb-4">{{ error }}</p>
-          <NuxtLink
-            to="/dashboard"
-            class="inline-block px-6 py-3 bg-gradient-to-r from-purple-500 to-purple-700 text-white rounded-lg font-semibold no-underline transition-transform hover:-translate-y-0.5 hover:shadow-lg"
-          >
+        <div v-else-if="error">
+          <Icon
+            name="heroicons:exclamation-circle"
+            class="mx-auto mb-4 h-11 w-11 text-coral"
+          />
+          <p class="band band-error mb-6">{{ error }}</p>
+          <NuxtLink to="/dashboard" class="btn-gold no-underline">
             Go to Dashboard
           </NuxtLink>
         </div>
-        <div v-else-if="success" class="text-center">
-          <div class="mb-4">
-            <Icon
-              name="heroicons:check-circle"
-              class="h-12 w-12 text-green-600 mx-auto"
-            />
-          </div>
-          <p class="text-gray-700 text-lg mb-4">
-            Successfully joined the list!
+        <div v-else-if="success">
+          <Icon
+            name="heroicons:check-circle"
+            class="mx-auto mb-4 h-11 w-11 text-citron"
+          />
+          <p class="font-display text-2xl font-bold text-cloud">
+            You're on the list.
           </p>
-          <p class="text-gray-500 text-sm mb-6">Redirecting to the list...</p>
+          <p class="mt-2 font-mono text-xs text-mist">Taking you there…</p>
         </div>
       </div>
     </div>

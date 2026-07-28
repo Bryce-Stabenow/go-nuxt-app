@@ -1,26 +1,24 @@
 <template>
   <PageContainer>
-    <div class="max-w-4xl mx-auto">
-      <div class="bg-white rounded-xl shadow-2xl py-10 px-4">
-        <div v-if="isLoading" class="text-center text-gray-600 text-base py-10">
-          Loading list...
+    <div class="max-w-2xl mx-auto">
+      <div class="ticket ticket-ruled px-5 py-8 sm:px-8">
+        <div v-if="isLoading" class="py-10 text-center font-mono text-sm text-mist">
+          Pulling the your list...
         </div>
-        <div v-else-if="error" class="text-center text-red-800 py-10">
-          <p class="mb-5 text-base">{{ error }}</p>
-          <NuxtLink
-            to="/dashboard"
-            class="inline-block px-6 py-3 bg-gradient-to-r from-purple-500 to-purple-700 text-white rounded-lg font-semibold no-underline transition-transform hover:-translate-y-0.5 hover:shadow-lg"
-          >
+        <div v-else-if="error" class="py-10 text-center">
+          <p class="band band-error mb-6">{{ error }}</p>
+          <NuxtLink to="/dashboard" class="btn-gold no-underline">
             Back to Dashboard
           </NuxtLink>
         </div>
         <div v-else-if="list" class="relative">
           <!-- Header -->
-          <div class="sticky top-0 bg-white z-10 py-2">
-            <div class="flex items-center justify-between">
+          <div class="sticky top-16 z-10 -mx-5 bg-navy-800/85 px-5 py-3 backdrop-blur-md sm:-mx-8 sm:px-8">
+            <p class="eyebrow mb-1.5">{{ list.items.length }} items</p>
+            <div class="flex items-center justify-between gap-3">
               <h1
                 v-if="!isEditingName"
-                class="text-3xl font-bold text-gray-900"
+                class="font-display text-3xl font-extrabold tracking-tight text-cloud"
               >
                 {{ list.name }}
               </h1>
@@ -30,14 +28,14 @@
                 @blur="saveName"
                 @keydown.enter="saveName"
                 @keydown.esc="cancelEditName"
-                class="text-3xl font-bold text-gray-900 bg-transparent border-b-2 border-purple-500 focus:outline-none focus:border-purple-700 w-full"
+                class="field-inline w-full text-3xl"
                 ref="nameInput"
               />
               <div class="flex items-center gap-2">
                 <button
                   v-if="!isEditingName"
                   @click="handleShareList"
-                  class="p-1 text-gray-400 hover:text-purple-600 transition-colors"
+                  class="btn-icon"
                   title="Share list"
                 >
                   <Icon name="heroicons:share" class="h-5 w-5" />
@@ -45,7 +43,7 @@
                 <button
                   v-if="!isEditingName"
                   @click="startEditName"
-                  class="p-1 text-gray-400 hover:text-purple-600 transition-colors"
+                  class="btn-icon"
                   title="Edit list name"
                 >
                   <Icon name="heroicons:pencil" class="h-5 w-5" />
@@ -54,7 +52,7 @@
                   v-if="!isEditingName && isListOwner"
                   @click="handleDeleteList"
                   :disabled="isDeletingList"
-                  class="p-1 text-gray-400 hover:text-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  class="btn-icon btn-icon-danger disabled:opacity-50 disabled:cursor-not-allowed"
                   title="Delete list"
                 >
                   <Icon
@@ -69,50 +67,41 @@
           </div>
 
           <!-- Share Notification -->
-          <div
-            v-if="shareNotification"
-            class="mb-4 p-3 bg-green-100 border border-green-300 text-green-800 rounded-lg text-sm"
-          >
+          <div v-if="shareNotification" class="band band-success mt-4">
             {{ shareNotification }}
           </div>
 
-          <div class="mb-6">
-            <div
-              v-if="list.description"
-              class="flex justify-between items-start mb-4"
-            >
-              <div class="flex-1">
-                <p class="text-gray-600 text-base">
-                  {{ list.description }}
-                </p>
-              </div>
-            </div>
-            <div class="flex gap-4 text-sm text-gray-500">
+          <div class="mb-6 mt-4">
+            <p v-if="list.description" class="mb-4 text-mist">
+              {{ list.description }}
+            </p>
+            <div class="flex gap-5 font-mono text-xs text-mist">
               <span
-                >Created:
+                >Opened
                 {{ new Date(list.created_at).toLocaleDateString() }}</span
               >
               <span
-                >Updated:
+                >Updated
                 {{ new Date(list.updated_at).toLocaleDateString() }}</span
               >
             </div>
           </div>
 
           <!-- Items Section -->
-          <div class="border-t border-gray-200 pt-6">
+          <div class="perforation mb-6"></div>
+          <div>
             <div class="flex justify-between items-center mb-4">
               <h2
                 v-if="!isSearchOpen"
-                class="text-xl font-semibold text-gray-900"
+                class="eyebrow-mist"
               >
-                Items ({{ list.items.length }})
+                The list
               </h2>
               <input
                 v-else
                 v-model="searchQuery"
                 @keydown.esc="closeSearch"
-                class="text-xl font-semibold text-gray-900 bg-transparent border-b-2 border-purple-500 focus:outline-none focus:border-purple-700 flex-1 mr-2"
+                class="field-inline mr-2 flex-1 text-lg"
                 placeholder="Search items..."
                 ref="searchInput"
               />
@@ -120,7 +109,7 @@
                 <button
                   v-if="isSearchOpen"
                   @click="closeSearch"
-                  class="p-1 text-gray-400 hover:text-purple-600 transition-colors"
+                  class="btn-icon"
                   title="Close search"
                 >
                   <Icon name="heroicons:x-mark" class="h-5 w-5" />
@@ -128,7 +117,7 @@
                 <button
                   v-if="!isSearchOpen"
                   @click="openSearch"
-                  class="p-1 text-gray-400 hover:text-purple-600 transition-colors"
+                  class="btn-icon"
                   title="Search items"
                 >
                   <Icon name="heroicons:magnifying-glass" class="h-5 w-5" />
@@ -137,11 +126,14 @@
             </div>
             <div
               v-if="list.items.length === 0 && !showAddForm"
-              class="text-center text-gray-500 py-10 border-2 border-dashed border-gray-200 rounded-lg"
+              class="rounded-ticket py-12 text-center"
+              style="border: 2px dashed rgba(147, 169, 199, 0.28)"
             >
-              <p>No items in this list yet.</p>
-              <p class="text-sm mt-2 text-purple-600">
-                Click the button below to get started.
+              <p class="font-display text-lg font-bold text-cloud">
+                Nothing on the ticket yet.
+              </p>
+              <p class="mt-2 font-mono text-xs text-brass">
+                Add your first item below.
               </p>
             </div>
             <div v-else class="space-y-3">
@@ -199,93 +191,70 @@
             <!-- Inline Add Item Form -->
             <div
               v-if="showAddForm"
-              class="mt-6 p-4 border-2 border-purple-300 rounded-lg bg-purple-50"
+              class="mt-6 rounded-ticket p-5"
+              style="border: 1.5px solid rgba(242, 180, 65, 0.35); background: rgba(242, 180, 65, 0.05)"
             >
+              <p class="eyebrow mb-4">Add to list</p>
               <form @submit.prevent="handleAddItem" class="space-y-4">
                 <div>
-                  <label
-                    for="add-item-name"
-                    class="block text-sm font-medium text-gray-700 mb-2"
-                  >
-                    Name*
-                  </label>
+                  <label for="add-item-name" class="field-label">Name*</label>
                   <input
                     id="add-item-name"
                     v-model="addForm.name"
                     type="text"
                     required
-                    class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-purple-500 transition-colors"
+                    class="field"
                     placeholder="Enter item name"
                     ref="addNameInput"
                   />
                 </div>
 
                 <div>
-                  <label
-                    for="add-item-quantity"
-                    class="block text-sm font-medium text-gray-700 mb-2"
-                  >
-                    Quantity
-                  </label>
+                  <label for="add-item-quantity" class="field-label">Quantity</label>
                   <input
                     id="add-item-quantity"
                     v-model.number="addForm.quantity"
                     type="number"
                     min="1"
-                    class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-purple-500 transition-colors"
+                    class="field"
                     placeholder="1"
                   />
                 </div>
 
                 <div>
-                  <label
-                    for="add-item-details"
-                    class="block text-sm font-medium text-gray-700 mb-2"
-                  >
-                    Details
-                  </label>
+                  <label for="add-item-details" class="field-label">Details</label>
                   <textarea
                     id="add-item-details"
                     v-model="addForm.details"
                     maxlength="512"
                     rows="3"
-                    class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-purple-500 transition-colors resize-none"
+                    class="field resize-none"
                     placeholder="Add any additional details (optional)"
                   />
-                  <div class="text-xs text-gray-500 mt-1 text-right">
+                  <div class="mt-1 text-right font-mono text-xs text-mist">
                     {{ (addForm.details || "").length }}/512
                   </div>
                 </div>
 
-                <div v-if="addError" class="text-red-600 text-sm">
+                <div v-if="addError" class="band band-error">
                   {{ addError }}
                 </div>
 
-                <div class="flex gap-4 justify-center">
-                  <button
-                    type="button"
-                    @click="cancelAddForm"
-                    class="px-4 py-2 text-gray-700 border-2 border-gray-300 rounded-lg font-medium hover:bg-gray-50 transition-colors"
-                  >
+                <div class="flex gap-3 justify-center">
+                  <button type="button" @click="cancelAddForm" class="btn-quiet">
                     Cancel
                   </button>
-                  <button
-                    type="submit"
-                    :disabled="isAdding"
-                    class="flex-1 px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-700 text-white rounded-lg font-medium hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <span v-if="isAdding">Adding...</span>
+                  <button type="submit" :disabled="isAdding" class="btn-gold flex-1">
+                    <span v-if="isAdding">Adding…</span>
                     <span v-else>Add Item</span>
                   </button>
                 </div>
               </form>
             </div>
             <div v-else class="flex justify-center pt-6">
-              <button
-                @click="showAddForm = true"
-                class="px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-700 text-white rounded-lg font-medium hover:shadow-lg transition-all"
-              >
-                + Add
+              <button @click="showAddForm = true" class="btn-gold">
+                <Icon name="heroicons:plus" class="h-4 w-4" />
+                Add item
               </button>
             </div>
           </div>
@@ -297,11 +266,11 @@
             <button
               @click="handleClearCheckedItems"
               :disabled="isClearingCheckedItems"
-              class="px-4 py-2 border-2 border-gray-300 rounded-lg font-medium text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              class="btn-quiet"
             >
-              <span v-if="isClearingCheckedItems">Clearing...</span>
+              <span v-if="isClearingCheckedItems">Clearing…</span>
               <span v-else>
-                Clear checked items ({{ checkedItemIndexes.length }})
+                Clear gathered ({{ checkedItemIndexes.length }})
               </span>
             </button>
           </div>
@@ -309,16 +278,18 @@
           <!-- Shared With Section -->
           <div
             v-if="list.shared_with.length > 0"
-            class="border-t border-gray-200 pt-6 mt-6"
+            class="mt-8"
           >
-            <h2 class="text-xl font-semibold text-gray-900 mb-4">
-              Shared With ({{ list.shared_with.length }})
+            <div class="perforation mb-6"></div>
+            <h2 class="eyebrow-mist mb-4">
+              Shared with · {{ list.shared_with.length }}
             </h2>
             <div class="flex flex-wrap gap-2">
               <span
                 v-for="sharedUser in list.shared_with"
                 :key="sharedUser.id"
-                class="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm"
+                class="chip"
+                style="background: rgba(190, 234, 76, 0.12); color: #d3f27f"
               >
                 {{ sharedUser.email || sharedUser.id }}
               </span>
@@ -326,12 +297,12 @@
           </div>
         </div>
       </div>
-      <div class="flex justify-center mt-10">
+      <div class="mt-8 flex justify-center">
         <NuxtLink
           to="/dashboard"
-          class="px-4 py-2 text-white border-2 border-white rounded-lg font-medium no-underline hover:bg-white hover:text-purple-500 transition-colors ml-4"
+          class="font-mono text-xs font-bold uppercase tracking-[0.14em] text-mist no-underline transition-colors hover:text-brass"
         >
-          Back to Dashboard
+          ← Back to Dashboard
         </NuxtLink>
       </div>
     </div>

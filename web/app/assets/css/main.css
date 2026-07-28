@@ -1,0 +1,205 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================================
+   GrocerMe — "Midnight Market Ticket"
+   A grocery list is a ledger. Deep navy canvas, brass rules,
+   receipt-mono metadata, tactile check tickets.
+   ============================================================ */
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-ink text-cloud font-sans antialiased;
+    /* Ledger paper: faint hairline grid + a warm brass glow up top */
+    background-image:
+      radial-gradient(120% 80% at 50% -20%, rgba(242, 180, 65, 0.1), transparent 55%),
+      radial-gradient(80% 60% at 85% 0%, rgba(42, 84, 136, 0.35), transparent 60%),
+      linear-gradient(to bottom, rgba(255, 255, 255, 0.028) 1px, transparent 1px);
+    background-size: 100% 100%, 100% 100%, 100% 2.2rem;
+    background-attachment: fixed, fixed, fixed;
+  }
+
+  ::selection {
+    background: theme("colors.brass.DEFAULT");
+    color: theme("colors.ink");
+  }
+
+  /* Visible, on-brand keyboard focus everywhere */
+  :focus-visible {
+    outline: 2px solid theme("colors.brass.DEFAULT");
+    outline-offset: 2px;
+    border-radius: 3px;
+  }
+
+  ::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+  }
+  ::-webkit-scrollbar-track {
+    background: theme("colors.navy.950");
+  }
+  ::-webkit-scrollbar-thumb {
+    background: theme("colors.navy.700");
+    border: 3px solid theme("colors.navy.950");
+    border-radius: 999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: theme("colors.navy.500");
+  }
+}
+
+@layer components {
+  /* ---- Eyebrow: mono receipt label ---- */
+  .eyebrow {
+    @apply font-mono uppercase text-brass;
+    font-size: 0.68rem;
+    letter-spacing: 0.28em;
+  }
+  .eyebrow-mist {
+    @apply eyebrow text-mist;
+  }
+
+  /* ---- Ticket: the core panel ---- */
+  .ticket {
+    @apply relative rounded-ticket bg-navy-800/80 shadow-ticket;
+    border: 1px solid rgba(147, 169, 199, 0.16);
+    backdrop-filter: blur(6px);
+  }
+  /* Brass rule stamped across the top of a ticket */
+  .ticket-ruled::before {
+    content: "";
+    @apply absolute left-0 right-0 top-0 h-[3px] rounded-t-ticket;
+    background: linear-gradient(
+      90deg,
+      theme("colors.brass.DEFAULT"),
+      theme("colors.brass.soft") 45%,
+      theme("colors.brass.deep")
+    );
+  }
+  /* Perforated divider — the torn-receipt edge */
+  .perforation {
+    height: 0;
+    border-top: 2px dashed rgba(147, 169, 199, 0.28);
+  }
+
+  /* ---- Buttons ---- */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-ticket font-mono text-sm font-bold
+      uppercase tracking-[0.14em] transition-all duration-150 cursor-pointer select-none
+      disabled:opacity-45 disabled:cursor-not-allowed;
+  }
+  .btn-gold {
+    @apply btn bg-brass text-ink px-6 py-3;
+    box-shadow: 0 12px 30px -14px rgba(242, 180, 65, 0.7);
+  }
+  .btn-gold:hover:not(:disabled) {
+    @apply bg-brass-soft -translate-y-0.5;
+    box-shadow: 0 18px 40px -14px rgba(242, 180, 65, 0.8);
+  }
+  .btn-gold:active:not(:disabled) {
+    @apply translate-y-0;
+  }
+  .btn-ghost {
+    @apply btn px-6 py-3 text-brass;
+    border: 1.5px solid rgba(242, 180, 65, 0.55);
+    background: rgba(242, 180, 65, 0.06);
+  }
+  .btn-ghost:hover:not(:disabled) {
+    @apply text-ink bg-brass border-brass -translate-y-0.5;
+  }
+  .btn-quiet {
+    @apply btn px-6 py-3 text-cloud;
+    border: 1.5px solid rgba(147, 169, 199, 0.28);
+    background: rgba(147, 169, 199, 0.06);
+  }
+  .btn-quiet:hover:not(:disabled) {
+    @apply bg-navy-700 border-navy-500;
+  }
+  .btn-danger {
+    @apply btn px-6 py-3 text-coral;
+    border: 1.5px solid rgba(255, 107, 87, 0.5);
+    background: rgba(255, 107, 87, 0.08);
+  }
+  .btn-danger:hover:not(:disabled) {
+    @apply text-ink;
+    background: theme("colors.coral");
+    border-color: theme("colors.coral");
+  }
+
+  /* Small square icon button (edit/share/delete row) */
+  .btn-icon {
+    @apply inline-flex items-center justify-center rounded-ticket p-2 text-mist transition-colors;
+    border: 1px solid rgba(147, 169, 199, 0.18);
+  }
+  .btn-icon:hover:not(:disabled) {
+    @apply text-brass border-brass/50 bg-brass/10;
+  }
+  .btn-icon-danger:hover:not(:disabled) {
+    @apply text-coral bg-coral/10;
+    border-color: rgba(255, 107, 87, 0.5);
+  }
+
+  /* ---- Form fields: navy wells ---- */
+  .field-label {
+    @apply eyebrow-mist mb-2 block;
+  }
+  .field {
+    @apply w-full rounded-ticket bg-navy-950/70 px-4 py-3 text-cloud transition-colors
+      placeholder:text-mist/50;
+    border: 1.5px solid rgba(147, 169, 199, 0.2);
+  }
+  .field:focus {
+    @apply outline-none border-brass bg-navy-950;
+    box-shadow: 0 0 0 3px rgba(242, 180, 65, 0.16);
+  }
+  .field-inline {
+    @apply bg-transparent text-cloud font-display font-bold border-0 border-b-2 border-brass/70
+      focus:outline-none focus:border-brass;
+  }
+
+  /* Mono metadata chip (quantity, counts) */
+  .chip {
+    @apply inline-flex items-center gap-1 rounded-full font-mono text-xs px-2.5 py-0.5;
+    background: rgba(147, 169, 199, 0.12);
+    color: theme("colors.mist");
+  }
+  .chip-brass {
+    background: rgba(242, 180, 65, 0.14);
+    color: theme("colors.brass.soft");
+  }
+
+  /* Alert bands */
+  .band {
+    @apply rounded-ticket px-4 py-3 text-sm;
+    border: 1px solid transparent;
+  }
+  .band-error {
+    background: rgba(255, 107, 87, 0.1);
+    border-color: rgba(255, 107, 87, 0.35);
+    @apply text-coral;
+  }
+  .band-success {
+    background: rgba(190, 234, 76, 0.1);
+    border-color: rgba(190, 234, 76, 0.35);
+    color: theme("colors.citron");
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}

@@ -1,10 +1,13 @@
 <template>
   <PageContainer>
-    <div class="flex justify-center">
-      <div class="bg-white rounded-xl shadow-2xl py-10 px-4 w-full max-w-md">
-        <h1 class="text-3xl font-bold text-gray-900 mb-2">Sign In</h1>
-        <p class="text-gray-600 text-sm mb-8">
-          Welcome back! Please sign in to your account
+    <div class="mx-auto flex max-w-md justify-center">
+      <div class="ticket ticket-ruled w-full p-7 pt-8 sm:p-9">
+        <p class="eyebrow mb-3">Back to the counter</p>
+        <h1 class="font-display text-3xl font-extrabold tracking-tight text-cloud">
+          Sign In
+        </h1>
+        <p class="mt-2 mb-8 text-sm text-mist">
+          Welcome back — your lists are right where you left them.
         </p>
         <form id="signinForm" @submit.prevent="handleSubmit">
           <FormInput
@@ -21,26 +24,18 @@
             v-model="password"
             required
           />
-          <button
-            type="submit"
-            class="w-full py-3.5 bg-gradient-to-r from-purple-500 to-purple-700 text-white rounded-lg text-base font-semibold cursor-pointer transition-transform hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0"
-          >
-            Sign In
-          </button>
+          <button type="submit" class="btn-gold w-full">Sign In</button>
         </form>
 
-        <div
-          v-if="message"
-          class="mt-5 p-3 rounded-lg bg-red-100 text-red-800 border border-red-200"
-        >
-          <div>{{ message }}</div>
+        <div v-if="message" class="band band-error mt-5">
+          {{ message }}
         </div>
-        
-        <div class="text-center mt-5 text-gray-600 text-sm">
-          Don't have an account?
+
+        <div class="mt-6 text-center font-mono text-xs text-mist">
+          No account yet?
           <NuxtLink
             to="/signup"
-            class="text-purple-600 no-underline font-medium hover:underline"
+            class="font-bold text-brass no-underline hover:underline"
             >Sign Up</NuxtLink
           >
         </div>
