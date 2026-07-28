@@ -146,16 +146,33 @@ const savedOrder = ref<string[]>([]);
 // stays false during SSR.
 const isOrderReady = ref(false);
 
-// Load the saved order once the authenticated user is known (client-only).
-watch(
-  () => user.value?.id,
-  (userId) => {
-    if (!userId) return;
-    savedOrder.value = loadOrder(userId);
-    if (import.meta.client) isOrderReady.value = true;
-  },
-  { immediate: true }
-);
+// Read the saved order and reveal the list. Runs only after mount (see below).
+const revealOrderedLists = (userId: string) => {
+  savedOrder.value = loadOrder(userId);
+  isOrderReady.value = true;
+};
+
+// Load the saved order once the authenticated user is known — but only AFTER
+// mount. Flipping isOrderReady during setup would make the client's first
+// (hydration) render show the list while the server rendered the spinner
+// (localStorage is client-only), a hydration mismatch that leaks the spinner's
+// flex layout onto the list. onMounted runs post-hydration, so the client's
+// first render still matches the server's spinner, then transitions cleanly.
+onMounted(() => {
+  if (user.value?.id) {
+    revealOrderedLists(user.value.id);
+    return;
+  }
+  // User not resolved yet at mount — wait for it, then stop watching.
+  const stop = watch(
+    () => user.value?.id,
+    (userId) => {
+      if (!userId) return;
+      revealOrderedLists(userId);
+      stop();
+    }
+  );
+});
 
 // Lists in the user's manual order. Unseen lists (new/newly-shared) float to
 // the top until dragged into place. The writable setter persists a new order
