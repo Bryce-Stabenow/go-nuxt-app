@@ -8,6 +8,8 @@
 <script setup lang="ts">
 useHead({
   link: [
+    { rel: 'icon', type: 'image/x-icon', sizes: '32x32', href: '/favicon.ico?v=grocerme-1' },
+    { rel: 'icon', type: 'image/svg+xml', sizes: 'any', href: '/icon.svg?v=grocerme-1' },
     { rel: 'manifest', href: '/manifest.webmanifest' },
     { rel: 'apple-touch-icon', href: '/apple-touch-icon.png' }
   ],
