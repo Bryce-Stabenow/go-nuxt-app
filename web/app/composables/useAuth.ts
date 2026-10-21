@@ -56,8 +56,21 @@ export const useAuth = () => {
       user.value = userData;
       lastCheck.value = now;
       return true;
-    } catch (error) {
-      // User is not authenticated
+    } catch (error: any) {
+      const status = error?.statusCode ?? error?.status ?? error?.response?.status;
+      if (status !== 401 && status !== 404) {
+        // A connection failure or server error doesn't invalidate the session.
+        // Retry on the next check instead of caching a logged-out result.
+        if (!process.server && isAuthenticated.value) {
+          return true;
+        }
+        throw createError({
+          statusCode: 503,
+          statusMessage: "Unable to check your session. Please try again.",
+        });
+      }
+
+      // The API confirmed that the session or user is no longer valid.
       isAuthenticated.value = false;
       user.value = null;
       lastCheck.value = now;

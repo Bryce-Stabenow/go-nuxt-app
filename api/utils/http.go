@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+	"time"
 )
 
 // ContextKey is a custom type for context keys to avoid collisions
@@ -73,6 +74,10 @@ func SetCookie(w http.ResponseWriter, name, value string, maxAge int, path, doma
 		Secure:   secure,
 		HttpOnly: httpOnly,
 	}
+	if maxAge > 0 {
+		cookie.Expires = time.Now().Add(time.Duration(maxAge) * time.Second).UTC()
+	} else if maxAge < 0 {
+		cookie.Expires = time.Unix(1, 0).UTC()
+	}
 	http.SetCookie(w, cookie)
 }
-

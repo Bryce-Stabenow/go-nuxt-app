@@ -16,6 +16,8 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+const authSessionDuration = 28 * 24 * time.Hour
+
 // HandleSignup handles user registration
 func HandleSignup(w http.ResponseWriter, r *http.Request) {
 	var req models.SignupRequest
@@ -56,7 +58,7 @@ func HandleSignup(w http.ResponseWriter, r *http.Request) {
 	if req.AvatarURL != nil && *req.AvatarURL != "" {
 		profile.AvatarURL = *req.AvatarURL
 	}
-	
+
 	user := models.User{
 		ID:           primitive.NewObjectID(),
 		Email:        req.Email,
@@ -80,8 +82,7 @@ func HandleSignup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Set JWT as HTTP-only cookie (24 hours expiration to match token)
-	utils.SetCookie(w, "jwt_token", token, 3600*24, "/", "", false, true)
+	setAuthCookie(w, token)
 
 	// Return response
 	utils.JSONResponse(w, http.StatusCreated, models.AuthResponse{
@@ -134,8 +135,7 @@ func HandleSignin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Set JWT as HTTP-only cookie (24 hours expiration to match token)
-	utils.SetCookie(w, "jwt_token", token, 3600*24, "/", "", false, true)
+	setAuthCookie(w, token)
 
 	// Return response
 	utils.JSONResponse(w, http.StatusOK, models.AuthResponse{
@@ -182,19 +182,24 @@ func HandleGetMe(w http.ResponseWriter, r *http.Request) {
 func HandleLogout(w http.ResponseWriter, r *http.Request) {
 	// Clear the JWT cookie by setting it with an expired expiration time
 	utils.SetCookie(w, "jwt_token", "", -1, "/", "", false, true)
-	
+
 	utils.JSONResponse(w, http.StatusOK, map[string]string{"message": "Logged out successfully"})
 }
 
-// generateToken creates a JWT token for the given user ID
+// setAuthCookie persists the session across browser and PWA restarts.
+func setAuthCookie(w http.ResponseWriter, token string) {
+	utils.SetCookie(w, "jwt_token", token, int(authSessionDuration/time.Second), "/", "", false, true)
+}
+
+// generateToken creates a JWT token for the given user ID.
 func generateToken(userID string) (string, error) {
-	// Token expires in 24 hours
-	expirationTime := time.Now().Add(24 * time.Hour)
+	now := time.Now()
+	expirationTime := now.Add(authSessionDuration)
 
 	claims := jwt.MapClaims{
 		"user_id": userID,
 		"exp":     expirationTime.Unix(),
-		"iat":     time.Now().Unix(),
+		"iat":     now.Unix(),
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
